@@ -1,6 +1,6 @@
 # Population Receptive Field (pRF)
 
-Code for fitting population receptive fields (Dumoulin & Wandell, 2008). Includes compressive spatial summation exponential parameter (Kay et al., 2013).
+Code for fitting population receptive fields (Dumoulin & Wandell, 2008) for multidimensional models. Includes optional compressive spatial summation exponential parameter (Kay et al., 2013).
 
 ---
 
@@ -53,46 +53,11 @@ Code for fitting population receptive fields (Dumoulin & Wandell, 2008). Include
 
 --- 
 
-# Verions
-
-### Verson 1.0
-- Estimates individual HRF parameters, tau & delta
-- Fits 1D Gaussian pRF model with parameters, mu & sigma; includes a compressive spatal summation exponential parameter, exp  
-<br>
-
-### Version 1.1
-- Added cost option to parameter estimation
-- Fixed convoluion of stimulus that is not time locked to scan's TRs. Note currently only works so long as stimulus presentation interval is constant and not jittered
-- Added plotting functions to plot parameter histograms and pRF model predicted voxel time courses vs. actual voxel time courses
-- Added demostration scripts and data (see Demostration section)
-- Added BrainVoyager QX capatible functions and demo files for visualization for demonstration data
-- Fixed bugs for single scan inputs
-- Optimizing script for additional efficient and interfacing
-- Added more misc. functions  
-<br>
+# Latest Version
 
 ### Version 2.0
-- Added m-D pRF modeling! (finally)
-- Added options to fit pRF model and HRF (in iterations) in one go
-- Changed mentions of 'HDR' to 'HRF' 
-- Iterative HRF takes subset of voxels past settable threshold after initial pRF fitting and parameters to then fit tau and delta parameters of HRF. HRF parameters are then held constant to be pRF fitted. This cycle repeats ending on a HRF fit for however many HRF fitting iterations specified.  
-- Added createModel.m, GLMinVOI.m, callFitModel.m, callFitHRF.m
-- Edited bug in safeSave.m
-- Modified createConvStim, createScans, createPaths, createStimImg, estpRF, predictpRF for m-D pRF modeling
-- Added voi2mat.m; saves linear indices of .voi coordinates within a .vtc as a .mat
-- Added nestedF.m; computes a nested F test on each voxel where Model 1 must be nested within Model 2.
-- Added more misc. functions
-<br>
-
-### Version 2.1
-- ~~~~!!!!!~~~~ WIP WIP WIP WIP WIP ~~~~!!!!!~~~~
-- Idea stage, please don't take these version notes as ideas to be done
-- should include without BV compatibility (maybe for another version...) for other programs
-- createScan is too BV optimized, if some fields fail it should not be a catastrophic failure
-- doesn't mean i shouldn't include more functionality for BV...
-- paradigm input should be variable such as from a .txt file
-- WORKING IN TIME AND NOT TRS!!!!!
-- should start writing a documentation manual about all the options @.@
+- m-D pRF modeling: can fit 1D pRF model (i.e., Tonotopy), or 2D pRF models (i.e., Retinotopy), up to m-D pRF models
+- Iterative HRF fitting: takes a subset of voxels past settable threshold after initial pRF parameter fitting, holds those constant, fits tau + delta HRF parameters, take median tau + delta, hold those constant, and re-fit pRF parameter(s) on subset of voxels for specified iterations
 
 --- 
 
