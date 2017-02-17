@@ -43,11 +43,9 @@ function [scan] = createStimImg(scan, opt)
 
 %% Calculate Up Sample Factor for Stimulus Image
 
-% if upsample to desired resolution
+upSampFactor = 1;
 if isfield(opt, 'nSamples') && ~isnan(opt.nSamples)
     upSampFactor = round(opt.nSamples/length(scan.k));
-else
-    upSampFactor = 1;
 end
 
 %% Interpolate Up Sampled Resolution of Image 
@@ -59,8 +57,8 @@ scan.(paramNames.funcOf{:}) = scan.(paramNames.funcOf{:})(1:end-(upSampFactor-1)
 
 %% Create Stimulus Image
 
-stimImg = zeros(scan.nVols, length(scan.(paramNames.funcOf{:})));
-for i = 1:scan.nVols
+stimImg = zeros(length(scan.paradigm), length(scan.(paramNames.funcOf{:})));
+for i = 1:size(stimImg,1) % for each row of the stimulus image/paradigm length
     if ~isnan(scan.paradigm(i))
         stimImg(i,:) = scan.(paramNames.funcOf{:}) == scan.paradigm(i);
     end
@@ -71,6 +69,6 @@ scan.stimImg = stimImg;
 
 if ~all(ismember(paramNames.funcOf, fieldnames(scan)))
     errFlds = setdiff(paramNames.funcOf, fieldnames(scan));
-    error(sprintf('createStimImg() did not create %s() field(s) for ''scan'' structure: %s', ...
-        opt.model, strjoin(errFlds, ', ')));
+    error('createStimImg() did not create %s() field(s) for ''scan'' structure: %s', ...
+        opt.model, strjoin(errFlds, ', '));
 end

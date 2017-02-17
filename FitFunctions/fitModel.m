@@ -1,38 +1,49 @@
-function [err,pred] = fitModel(fitParams, vN, scan, opt)
-% [err,pred] = fitModel(fitParams, vN, scan, opt)
-% 
+function [err] = fitModel(fitParams, vN, scan, opt)
+% [err] = fitModel(fitParams, vN, scan, opt)
+%
 % Calcuates the average correlation error (negative) for a given voxel
 % across all scans
 %
-% Inputs: 
+% Inputs:
 %   fitParams           A structure of parameter values for fitted function
 %   vN                  Voxel number
-%   scan                A structure containing information about the 
-%                       scan(s) 
+%   scan                A structure containing information about the
+%                       scan(s)
 %   opt                 A structure containing options for pRF fitting
-% 
+%
 % Outputs:
 %   err                 Mean (negative) cross correlation across all scans
-%   pred                Predicted time course for each scan with the given
-%                       'fitParams'
 %
 % Note:
-% - This funciton is trying to maximizing the cross-correlation, but 
-%   because 'fminsearchcon' is a MINIZATION function, we add a - sign in 
+% - This funciton is trying to maximizing the cross-correlation, but
+%   because 'fminsearchcon' is a MINIZATION function, we add a - sign in
 %   front of the cross-correlation to make it negative
 
 % Written by Jessica Thomas - October 20, 2014
 % Edited by Kelly Chang for pRF fitting - June 21, 2016
 
-%% Fit pRF Model 
+%% Fit pRF Model
 
 corr = 0;
 for i = 1:length(scan)
-    pred(i).tc = eval(['scan(i).convStim*' opt.model '(fitParams,scan(i));']);
-    pred(i).tc = pred(i).tc .^ fitParams.exp; 
-       
+    if opt.estHDR 
+        scan(i).convStim = createConvStim(scan(i), fitParams); 
+    end
+    
+    tmp = eval(sprintf('scan(i).convStim*%s(fitParams,scan(i));', opt.model));
+    pred = pos0(tmp) .^ fitParams.exp;
+    
     tc = [scan(i).vtc.tc];
-    tmp = callCorr(tc(:,vN), pred(i).tc, opt.corr);
+    tmp = callCorr(tc(:,vN), pred, opt.corr);
     corr = corr + tmp;
 end
 err = -corr/length(scan); % mean (negative) cross correlation across all scans
+
+if isfield(opt, 'cost') && ~isempty(opt.cost) && ~isempty(fieldnames(opt.cost))
+    flds = fieldnames(opt.cost);
+    for i = 1:length(flds)
+        tmp(1) = (min(fitParams.(flds{i}), opt.cost.(flds{i})(1)) - opt.cost.(flds{i})(1)).^2;
+        tmp(2) = (max(fitParams.(flds{i}), opt.cost.(flds{i})(2)) - opt.cost.(flds{i})(2)).^2;
+        err = err + sum(tmp(~isnan(tmp)));
+    end
+end

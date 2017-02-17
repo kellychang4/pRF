@@ -29,4 +29,4 @@ tmp = arrayfun(@(x) ['origVarargin{' num2str(x) '}'], 1:length(origVarargin), ..
     'UniformOutput', false);
 
 % evaluate the function
-err = eval([funName '(params,' strjoin(tmp, ',') ');']);
+err = eval(sprintf('%s(params,%s);', funName, strjoin(tmp, ',')));

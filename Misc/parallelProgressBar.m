@@ -31,13 +31,11 @@ function parallelProgressBar(n, opt)
 %% Input Control
 
 if ~exist('opt', 'var')
-    opt.title = 'Progress';
-    opt.bit = 'uint32';
-    opt.width = 50;
+    opt = struct();
 end
 
 if ~isfield(opt, 'title')
-    opt.title = 'Progress';
+    opt.title = 'Progress:';
 end
 
 if ~isfield(opt, 'bit')
@@ -55,7 +53,7 @@ fileName = fullfile(tempdir, 'parallelProgressBar.bin');
 if n < 0
     delete(fileName);
     disp(repmat(char(10),1,10));
-    disp(['  ' opt.title ':']);
+    disp(['  ' opt.title]);
     disp(['   [' repmat('-',1,opt.width) '] 100.00%']);
 else
     if ~exist(fileName, 'file')
@@ -75,7 +73,7 @@ else
     p = length(count)/n;
     barLen = round(opt.width*p);
     disp(repmat(char(10),1,10));
-    disp(['  ' opt.title ':']);
+    disp(['  ' opt.title]);
     disp(['   [' repmat('-',1,barLen) repmat(' ',1,opt.width-barLen) '] ' ...
         sprintf('%5.2f%%', p*100)]);
 end

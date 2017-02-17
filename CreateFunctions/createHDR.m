@@ -36,7 +36,7 @@ if ~isfield(opt, 'type')
     opt.type = '';
     if ~all(ismember({'tau', 'delta'}, fieldnames(opt)))
         errFlds = setdiff({'tau', 'delta'}, fieldnames(opt));
-        error(sprintf('Must be specified: %s', strjoin(errFlds, ', ')));
+        error('Must be specified: %s', strjoin(errFlds, ', '));
     end
 end
 

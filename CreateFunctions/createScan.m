@@ -89,6 +89,14 @@ if ~isempty(scanOpt.voiPath) && isempty(opt.roi)
     opt.roi = [opt.roi '.voi'];
 end
 
+if ischar(scanOpt.vtcPath)
+    scanOpt.vtcPath = {scanOpt.vtcPath};
+end
+
+if ischar(scanOpt.paradigmPath)
+    scanOpt.paradigmPath = {scanOpt.paradigmPath};
+end
+
 %% .vtc File(s) and Folder Names
 
 [~,tmp] = cellfun(@fileparts, scanOpt.vtcPath, 'UniformOutput', false);
@@ -99,7 +107,9 @@ tmp = cellfun(@(x) ['(/|\\)(?<folder>[(\w)\-]+)(/|\\)' x], vtcFile, ...
 vtcFolder = cellfun(@(x,y) struct2cell(regexp(x,y,'names')), ...
     scanOpt.vtcPath, tmp, 'UniformOutput', false);
 vtcFolder = [vtcFolder{:}];
-if length(unique(vtcFolder))
+if isempty(vtcFolder) 
+    vtcFolder = {''};
+elseif length(unique(vtcFolder)) == 1
     vtcFolder = unique(vtcFolder);
 end
 
@@ -113,7 +123,9 @@ tmp = cellfun(@(x) ['(/|\\)(?<folder>[(\w)\-]+)(/|\\)' x], paradigmFile, ...
 paradigmFolder = cellfun(@(x,y) struct2cell(regexp(x,y,'names')), ...
     scanOpt.paradigmPath, tmp, 'UniformOutput', false);
 paradigmFolder = [paradigmFolder{:}];
-if length(unique(paradigmFolder))
+if isempty(paradigmFolder)
+    paradigmFolder = {''};
+elseif length(unique(paradigmFolder)) == 1
     paradigmFolder = unique(paradigmFolder);
 end
 
@@ -151,8 +163,8 @@ for i = 1:length(scanOpt.vtcPath)
     tmpScan.vtcSize = size(bc.VTCData); % size of the .vtc data
     tmpScan.nVols = bc.NrOfVolumes; % number of volumes in the scan
     tmpScan.TR = bc.TR/1000; % seconds
-    tmpScan.dur = tmpScan.nVols*tmpScan.TR; % scan duration with no breaks, seconds
-    tmpScan.t = 0:tmpScan.TR:(tmpScan.dur-tmpScan.TR);
-    tmpScan.vtc = vtc;
+    tmpScan.dur = tmpScan.nVols*tmpScan.TR; % scan duration, seconds
+    tmpScan.t = 0:tmpScan.TR:(tmpScan.dur-tmpScan.TR); % time vector, seconds
+    tmpScan.vtc = vtc; % voxel time course
     scan(i) = createStimImg(tmpScan, opt); % collect into one 'scan' stucture
 end

@@ -61,25 +61,33 @@ nVox = length(scan(1).vtc);
 freeName = regexprep(opt.freeList, '[^A-Za-z]', '');
 
 paramNames = eval(opt.model);
-if ~opt.CSS
-    scanExp = 1; % no exponent factor
-else
+scanExp = 1;  % no exponent factor
+if opt.CSS
     scanExp = mean([seeds.exp]);
     paramNames.params = [paramNames.params 'exp'];
 end
 
 %% Error Checking
 
-if any(ismember(freeName, fieldnames(seeds)) == 0) % if free parameter without seeds
+% if free parameter without seeds
+if any(ismember(freeName, fieldnames(seeds)) == 0)
     errFlds = setdiff(freeName, fieldnames(seeds));
-    error(sprintf('No seeds for opt.freeList parameter(s): %s', ...
-        strjoin(errFlds, ', ')));
+    error('No seeds for opt.freeList parameter(s): %s', ...
+        strjoin(errFlds, ', '));
 end
 
-if any(ismember(freeName, paramNames.params) == 0) % if model cannot estimate all given free parameters
+% if model cannot estimate all given free parameters
+if any(ismember(freeName, paramNames.params) == 0)
     errFlds = setdiff(freeName, paramNames.params);
-    error(sprintf('%s() does not have given opt.freeList parameter(s): %s', ...
-        opt.model, strjoin(errFlds, ', ')));
+    error('%s() does not have given opt.freeList parameter(s): %s', ...
+        opt.model, strjoin(errFlds, ', '));
+end
+
+% if cost parameter is not all within the free parameters, excluding 'tau' and 'delta'
+if ~isempty(fieldnames(opt.cost)) && ~all(ismember(freeName, setdiff(fieldnames(opt.cost), {'tau', 'delta'})))
+    errFlds = setdiff(setdiff(fieldnames(opt.cost), {'tau', 'delta'}), freeName);
+    error('Cost parameter(s) not found in the free parameters: %s', ...
+        strjoin(errFlds, ', '))
 end
 
 %% Initialize pRF Fields
@@ -96,7 +104,11 @@ for i = 1:nVox
     end
 end
 
-%% Create Predicted Responses for Each Seed
+%% Open Parallel Cores
+
+opt = openParallel(opt);
+
+%% Create Predicted BOLD Response for Each Seed
 
 tic();
 opt.startTime = datestr(now);
@@ -107,12 +119,8 @@ for i = 1:length(scan) % loop through scan
         scan(i).seedpRF(:,i2) = tmp(:); % pRF model for each seed
     end
     scan(i).convStim = createConvStim(scan(i), hdr); % convolve hdr with the stimulus image
-    scan(i).seedPred = [scan(i).convStim] * [scan(i).seedpRF].^scanExp; % multiply by seed pRF
+    scan(i).seedPred = pos0([scan(i).convStim] * [scan(i).seedpRF]).^scanExp; % multiply by seed pRF
 end
-
-%% Open Parallel Cores
-
-opt = openParallel(opt);
 
 %% Calculating Best Seeds
 
@@ -140,14 +148,12 @@ parfor i = 1:nVox
     pRF(i).bestSeed = orderfields(bestSeed, ...
         ['seedID' freeName 'corr']);
 end
-
-if ~opt.quiet && opt.parallel
-    parallelProgressBar(-1, struct('title', 'Calculating Best Seed')); % clean up parallel progress bar
+if ~opt.quiet && opt.parallel % clean up parallel progress bar
+    parallelProgressBar(-1, struct('title', 'Calculating Best Seed'));
 end
 
 %% Prepare 'fitParams' Structure for pRF Fitting
 
-disp('Preparing ''fitParams'' Structure for pRF Fitting');
 for i = 1:nVox
     tmp = hdr;
     tmp.didFit = false;
@@ -161,8 +167,12 @@ end
 
 %% Fitting pRF Model (and Estimating HDR)
 
-fittedParams = callFitModel(fitParams, pRF, scan, opt);
-if opt.estHDR
+disp('Fitting pRF Model');
+fittedParams = callFitModel(fitParams, opt.freeList, scan, pRF, opt);
+
+if opt.estHDR % if estimating HDR
+    disp('Estimating HDR');
+    fittedParams = callFitModel(fittedParams, {'tau','delta'}, scan, pRF, opt);
     hdr.fit.tau = median([fittedParams([fittedParams.didFit]).tau]);
     hdr.fit.delta = median([fittedParams([fittedParams.didFit]).delta]);
 end
@@ -188,5 +198,5 @@ collated = collate(scan, seeds, hdr, pRF, opt);
 %% Final Timings
 
 stopTime = toc;
-disp(sprintf('Final pRF Estimation Time %5.2f minutes', round(stopTime/60)));
+fprintf('Final pRF Estimation Time %5.2f minutes', round(stopTime/60));
 fprintf('\n\n\n');

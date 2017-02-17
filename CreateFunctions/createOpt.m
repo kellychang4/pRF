@@ -32,6 +32,15 @@ function [opt] = createOpt(type)
 %                       string (default: 'pearson')
 %       corrThr         Correlation threshold where anything below will not
 %                       be fitted, numeric (default: 0.01)
+%       cost            A structure containing parameters that will be
+%                       implemented in a cost function with fields that 
+%                       correpond to the free parameters being estimated:
+%       <parameter      Name of the free parameter with a minimum/maximum
+%             name>     bound in the cost function with fields:
+%           min         Minimum of the cost function boundary, NaN if no
+%                       boundary
+%           max         Maximum of the cost function boundary, NaN if no
+%                       boundary
 %       nSamples        Desired resolution of the stimulus image, numeric
 %                       (default: NaN)
 %       parallel        Parallel processing (true) OR not (false), logical
@@ -59,16 +68,16 @@ switch lower(type)
     case {'tonotopy', 'tono', 't'}
         vals = {'''Tonotopy''', '''Gaussian1D''', ...
             '{{''mu'',''0.01<sigma'',''0<exp<1''}}', '''''', 'true', ...
-            'false', 'true', '''pearson''', '0.01', 'NaN', 'false', ...
-            'false'};
+            'false', 'true', '''pearson''', '0.01', 'struct()', 'NaN', ...
+            'false', 'false'};
     case {'default'}
         vals = {'''''', '''Gaussian1D''', '{{''mu'',''sigma''}}', ...
-            '''''', 'true', 'false', 'false', '''pearson''', '0.01', 'NaN', ...
-            'false', 'false'};
+            '''''', 'true', 'false', 'false', '''pearson''', '0.01', ...
+            'struct()', 'NaN', 'false', 'false'};
 end
 
 flds = {'map', 'model', 'freeList', 'roi', 'fitpRF', 'estHDR', 'CSS', ...
-    'corr', 'corrThr', 'nSamples', 'parallel', 'quiet'};
+    'corr', 'corrThr', 'cost', 'nSamples', 'parallel', 'quiet'};
 evalStr = strcat('''', flds, '''', ',', vals);
 evalStr = strcat('struct(', strjoin(evalStr,','), ');');
 opt = eval(evalStr);
