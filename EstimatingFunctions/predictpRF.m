@@ -61,8 +61,8 @@ for vN = 1:nVox
             tmp = data(i).convStim * callModel(collated.opt.model, collated.pRF(vN), data(i));
             predicted(i).vtc(vN).pred = pos0(tmp) .^ scanExp(i);
             
-            predicted(i).vtc(vN).corr = callCorr(predicted(i).vtc(vN).tc, ...
-                predicted(i).vtc(vN).pred, collated.opt.corr);
+            predicted(i).vtc(vN).corr = feval(collated.opt.corr, ...
+                predicted(i).vtc(vN).tc, predicted(i).vtc(vN).pred);
         end
     end
 end

@@ -127,8 +127,7 @@ vtcFile = strcat(tmp, '.vtc');
 
 %% Paradigm File Name(s)
 
-[~,tmp,ext] = cellfun(@fileparts, scanOpt.paradigmPath, ...
-    'UniformOutput', false);
+[~,tmp,ext] = cellfun(@fileparts, scanOpt.paradigmPath, 'UniformOutput', false);
 paradigmFile = strcat(tmp, ext);
 
 %% Creating 'scan' Structure

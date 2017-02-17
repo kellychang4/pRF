@@ -135,7 +135,7 @@ parfor i = 1:nVox
     % find best seeds to intialize pRF fitting
     seedMat = NaN(length(scan), length(seeds)); % initialize predicted seeds matrix
     for i2 = 1:length(scan)
-        seedMat(i2,:) = callCorr(scan(i2).vtc(i).tc, scan(i2).seedPred, opt.corr);
+        seedMat(i2,:) = feval(opt.corr, scan(i2).vtc(i).tc, scan(i2).seedPred);
     end
     seedMat = mean(seedMat,1); % average across scan
     [maxCorr,bestSeedIndx] = max(seedMat); % find best seeds

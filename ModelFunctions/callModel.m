@@ -28,4 +28,4 @@ if length(paramNames.funcOf) > 1 % greater than 1D
     eval(sprintf('[funcOf.%s]=meshgrid(funcOf.%s);', strjoin(paramNames.funcOf, ',funcOf.'), ...
         strjoin(paramNames.funcOf, ',funcOf.')))
 end
-out = eval(sprintf('%s(params,funcOf);', model));
+out = feval(model, params, funcOf); 

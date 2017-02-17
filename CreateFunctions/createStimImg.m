@@ -50,7 +50,7 @@ function [scan] = createStimImg(scan, opt)
 
 %% Error Check
 
-paramNames = eval(opt.model);
+paramNames = feval(opt.model);
 if length(paramNames.funcOf) > 1 && range(structfun(@length, scan.paradigm)) ~= 0
     error('Paradigm sequences are not equivalent in length');
 end
@@ -80,6 +80,6 @@ scan.stimImg = stimImg;
 
 if ~all(ismember(paramNames.funcOf, fieldnames(scan)))
     errFlds = setdiff(paramNames.funcOf, fieldnames(scan));
-    error('createStimImg() did not create %s() field(s) for ''scan'' structure: %s', ...
+    error('createStimImg did not create %s() field(s) for ''scan'' structure: %s', ...
         opt.model, strjoin(errFlds, ', '));
 end

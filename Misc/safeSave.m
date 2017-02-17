@@ -39,7 +39,6 @@ fullPath = fullfile(p, fileName);
 %% Saving Specific Variables
 
 evalStr = sprintf('save(''%s'');', fullPath);
-
 if nargin > 1
     nVar = strjoin(arrayfun(@(x) sprintf(',varargin{%d}',x), 1:length(varargin), ...
         'UniformOutput', false), '');
