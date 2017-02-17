@@ -1,18 +1,18 @@
 function [olt] = createOlt(opt)
 % [olt] = createOlt(opt)
 %
-% Creates a .olt file with 'n' colors compatiable with BrainVoyager QX
+% Creates a .olt file with 'n' colors, compatiable with BrainVoyager QX
 %
 % Input:
-%   opt              A structure containing options to create the .olt file
-%                    with fields:
-%       n            Number of colors, numeric (default: 20)
-%       saveName     Name the .olt file will be saved as, string
-%                    (default: 'olt<n>.olt')
+%   opt                 A structure containing options to create the .olt 
+%                       file with fields:
+%       n               Number of colors, numeric (default: 20)
+%       saveName        Name the .olt file will be saved as, string
+%                       (default: 'olt<n>.olt')
 % 
 % Output:
-%   olt              A structure containing information of the created .olt
-%                    file
+%   olt                 A structure containing information of the created 
+%                       .olt file
 % 
 % Note:
 % - Dependencies: <a href="matlab: web('http://support.brainvoyager.com/available-tools/52-matlab-tools-bvxqtools/232-getting-started.html')">BVQXTools/NeuroElf</a>
@@ -35,7 +35,7 @@ end
 
 %% Create .olt 
 
-olt = BVQXfile('new:olt');
+olt = BVQXfile('new:olt'); % ~!~BVQXTools Dependency~!~
 olt.NrOfColors = opt.n;
 olt.Colors = round(fliplr(jet(opt.n)) .* 255);
 
@@ -43,4 +43,4 @@ olt.Colors = round(fliplr(jet(opt.n)) .* 255);
 
 olt.saveAs(opt.saveName);
 [~,oltName] = fileparts(opt.saveName);
-disp(sprintf('Saved As: %s.olt', oltName));
+fprintf('Saved As: %s.olt\n', oltName);

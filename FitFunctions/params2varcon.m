@@ -23,9 +23,9 @@ function [var,lb,ub,varStr] = params2varcon(params, freeList)
 %   ub          Upper boundary if given, else Inf
 %   varStr      Variable name(s) as given in 'freeList'
 
-% Written by G.M. Boynton on 9/26/14
-% Adapted from 'params2var' by G.M. Boynton, written Summer of '00
-% Rewritten by Kelly Chang for pRF fitting - June 21, 2016
+% Written by G.M. Boynton - September 26, 2014
+% Adapted from 'params2var' by G.M. Boynton - Summer 2000
+% Rewritten by Kelly Chang for pRF package - June 21, 2016
 
 %% Evalulating
 

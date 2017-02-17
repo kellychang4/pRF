@@ -55,4 +55,3 @@ else
 end
 
 out = eval([letterCase '(out);']);
-end

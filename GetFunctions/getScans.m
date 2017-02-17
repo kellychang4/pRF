@@ -7,7 +7,7 @@ function [tbl] = getScans(collated)
 % 
 % Input:
 %   collated       A structure containing all fitted pRF information as 
-%                  as given by [collated] = estpRF(scan, seeds, hdr, opt)
+%                  as given by [collated] = estpRF(scan, seeds, hrf, opt)
 % 
 % Outputs:
 %   tbl            A Mx2 table where M is the number of scans. The first
@@ -15,6 +15,8 @@ function [tbl] = getScans(collated)
 %                  column reports the .vtc file(s)
 
 % Written by Kelly Chang - July 13, 2016
+
+%% Create Table
 
 tbl = struct2table(collated.scan);
 tbl = cell2table(tbl{:, {'paradigmFile', 'vtcFile'}});

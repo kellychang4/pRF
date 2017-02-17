@@ -1,7 +1,7 @@
 function [predicted,opt] = plotPredicted(collated, opt)
 % [predicted,opt] = plotPredicted(collated, opt)
 %
-% Plots 2 figures with the PREDICTED (dashed red) vs. ACTUAL (grey) time
+% Plot 2 figures with the PREDICTED (dashed red) vs. ACTUAL (grey) time
 % course:
 % (1) Predicted vs. Actual time course of a specified voxel across all
 % scans (scans delinelted with green vertical lines)
@@ -10,7 +10,7 @@ function [predicted,opt] = plotPredicted(collated, opt)
 %
 % Inputs:
 %   collated        A structure containing all fitted pRF information as
-%                   as given by [collated] = estpRF(scan, seeds, hdr, opt)
+%                   as given by [collated] = estpRF(scan, seeds, hrf, opt)
 %   opt             A structure containg options for the predicted vs.
 %                   actual time course plots with fields:
 %       voxel       Voxel index number to be plotted, numeric (default:
@@ -58,9 +58,9 @@ actual = ascolumn([allScans.tc]);
 pred = ascolumn([allScans.pred]);
 t = lengthOut(0, collated.scan(1).TR, size(actual,1));
 
-figure();
-hold on;
-plot(t, actual, 'Color', [0.75 0.75 0.75]);
+figure(); 
+subplot(2,1,1); hold on;
+plot(t, zscore(actual), 'Color', [0.75 0.75 0.75]);
 plot(t, zscore(pred), 'r--');
 plot(repmat(btwScan,1,2), ylim, 'g');
 xlabel('Time (s)');
@@ -69,12 +69,12 @@ axis tight
 
 %% Individual Scan
 
-breaks = asrow(find(isnan(collated.scan(opt.scan).paradigm)) * ...
-    (collated.scan(opt.scan).dur/length(collated.scan(opt.scan).paradigm)));
+paramNames = eval(collated.opt.model);
+breaks = asrow(find(isnan(collated.scan(opt.scan).paradigm.(paramNames.funcOf{1}))) * ...
+    (collated.scan(opt.scan).dur/length(collated.scan(opt.scan).paradigm.(paramNames.funcOf{1}))));
 
-figure();
-hold on;
-plot(collated.scan(opt.scan).t, predicted(opt.scan).vtc(opt.voxel).tc, 'Color', [0.75 0.75 0.75]);
+subplot(2,1,2); hold on;
+plot(collated.scan(opt.scan).t, zscore(predicted(opt.scan).vtc(opt.voxel).tc), 'Color', [0.75 0.75 0.75]);
 plot(collated.scan(opt.scan).t, zscore(predicted(opt.scan).vtc(opt.voxel).pred), 'r--');
 plot(repmat(breaks,2,1), ylim, ':', 'Color', [0 .65 0]);
 xlabel('Time (s)');

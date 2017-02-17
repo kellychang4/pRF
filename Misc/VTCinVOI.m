@@ -23,7 +23,7 @@ function [roi] = VTCinVOI(bc, voi, voiNum, normalize)
 
 % Stolen primarily from vtc_VOITimeCourse from BVQXtools_v08b
 % Modified from getVOIcoordinates from Paola 20 Sep 2010
-% Editted by Kelly Chang - April 19, 2016
+% Edited by Kelly Chang - April 19, 2016
 
 %% Input Control
 
@@ -46,8 +46,8 @@ vtcOffset = [bc.XStart bc.YStart bc.ZStart];
 
 % normalize vtc
 if normalize
-    vtcData = vtcData - repmat(mean(vtcData), vtcSize(1), 1); % subject each voxel by its mean
-    vtcData = vtcData ./ repmat(std(vtcData), vtcSize(1), 1); % normalize each voxel by it SD
+    vtcData = vtcData - repmat(mean(vtcData), vtcSize(1), 1); % subtract each voxel by its mean
+    vtcData = vtcData ./ repmat(std(vtcData), vtcSize(1), 1); % normalize each voxel by its SD
 end
 
 for i = voiNum

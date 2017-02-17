@@ -1,7 +1,7 @@
 function [coef] = pearson(x,y)
 % [coef] = pearson(x,y)
 %
-% Calculates the Pearson cross correlation coefficient for x and y
+% Calculates the Pearson cross-correlation coefficient for x and y
 % 
 % Inputs: 
 %   x           The first data series (column)
@@ -12,7 +12,7 @@ function [coef] = pearson(x,y)
 %   coef        The Pearson correlation coefficient
 
 % Written by Paola Binda - Feburary 11, 2012
-% Edited by Kelly Chang for pRF fitting - June 21, 2016
+% Edited by Kelly Chang for pRF package - June 21, 2016
 
 %% Input Control
 

@@ -12,7 +12,7 @@ function [err] = fitModel(fitParams, vN, scan, opt)
 %   opt                 A structure containing options for pRF fitting
 %
 % Outputs:
-%   err                 Mean (negative) cross correlation across all scans
+%   err                 Mean (negative) cross-correlation across all scans
 %
 % Note:
 % - This funciton is trying to maximizing the cross-correlation, but
@@ -20,17 +20,17 @@ function [err] = fitModel(fitParams, vN, scan, opt)
 %   front of the cross-correlation to make it negative
 
 % Written by Jessica Thomas - October 20, 2014
-% Edited by Kelly Chang for pRF fitting - June 21, 2016
+% Edited by Kelly Chang for pRF package - June 21, 2016
 
 %% Fit pRF Model
 
 corr = 0;
 for i = 1:length(scan)
-    if opt.estHDR 
+    if ~isnan(opt.estHRF)
         scan(i).convStim = createConvStim(scan(i), fitParams); 
     end
     
-    tmp = eval(sprintf('scan(i).convStim*%s(fitParams,scan(i));', opt.model));
+    tmp = scan(i).convStim * callModel(opt.model, fitParams, scan(i));
     pred = pos0(tmp) .^ fitParams.exp;
     
     tc = [scan(i).vtc.tc];

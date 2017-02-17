@@ -47,8 +47,8 @@ if nargin > 1
     tmp = ['save(''%s''' tmp ');'];
     evalStr = eval(['sprintf(tmp,fullPath' nVar ');']);
 end
-evalin('base', evalStr);
-disp(sprintf('Saved As: %s', fileName));
+evalin('caller', evalStr);
+fprintf('Saved As: %s\n', fileName);
 
 %% Output
 

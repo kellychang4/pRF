@@ -1,20 +1,20 @@
-function [collated] = estpRF(scan, seeds, hdr, opt)
-% [collated] = estpRF(scan, seeds, hdr, opt)
+function [collated] = estpRF(scan, seeds, hrf, opt)
+% [collated] = estpRF(scan, seeds, hrf, opt)
 %
-% Estimates the pRF model
+% Estimates the pRF model 
 %
 % Inputs:
 %   scan                    A structure containing information about the
 %                           scan(s) (see 'createScan.m')
 %   seeds                   A structure containing information about the
 %                           seeds (see 'createSeeds.m')
-%   hdr                     A structure containing information about the
+%   hrf                     A structure containing information about the
 %                           hemodynamic response function
-%                           (see 'createHDR.m')
+%                           (see 'createHRF.m')
 %   opt                     A structure containing information about model
 %                           fitting options (see 'createOpt.m')
 %
-% Outputs:
+% Output:
 %   collated                A collated structure with all relevant
 %                           structures as fields:
 %       scan                Same 'scan' structure, but with addition
@@ -22,12 +22,12 @@ function [collated] = estpRF(scan, seeds, hdr, opt)
 %           seedpRF         pRF model based on each seed parameter(s) in
 %                           'seeds', a MxN matrix where M is length(scan.x)
 %                           and N is the number of seeds
-%           convStim        Convolved HDR with the stimulus image
+%           convStim        Convolved HRF with the stimulus image
 %           seedPred        Predicted response for each seed pRF, a MxN
 %                           matrix where M is the number of volumes in the
 %                           scan and N si the number of seeds
 %       seeds               Same 'seeds' structure
-%       hdr                 Same 'hdr' structure, but if 'opt.estHDR' was
+%       hrf                 Same 'hrf' structure, but if 'opt.estHRF' was
 %                           true with additional field:
 %           fit             A structure with fitted estimate of 'tau' and
 %                           'delta' as fields
@@ -37,14 +37,14 @@ function [collated] = estpRF(scan, seeds, hdr, opt)
 %           didFit          Fitted voxel (true) OR not (false), logical
 %           <estimated      Estimated parameters, will match the parameters
 %           parameter(s)>   as given in 'opt.freeList'
-%           tau             Time constant of HDR used the estimate pRF
+%           tau             Time constant of HRF used the estimate pRF
 %                           parameters
-%           delta           Delay (seconds) of HDR used to estimate pRF
+%           delta           Delay (seconds) of HRF used to estimate pRF
 %                           parameters
 %           corr            Correlation from the estimated pRF parameters
 %           bestSeed        A structure containing information about the
 %                           best seed used to estimate the pRF model, see
-%                           Note section for more information
+%                           Notes section for more information
 %       opt                 Same 'opt' structure
 %
 % Notes:
@@ -61,7 +61,7 @@ nVox = length(scan(1).vtc);
 freeName = regexprep(opt.freeList, '[^A-Za-z]', '');
 
 paramNames = eval(opt.model);
-scanExp = 1;  % no exponent factor
+scanExp = 1; % no exponent factor
 if opt.CSS
     scanExp = mean([seeds.exp]);
     paramNames.params = [paramNames.params 'exp'];
@@ -106,30 +106,30 @@ end
 
 %% Open Parallel Cores
 
-opt = openParallel(opt);
+opt.parallel = openParallel(opt.parallel);
 
 %% Create Predicted BOLD Response for Each Seed
 
 tic();
 opt.startTime = datestr(now);
-disp('Calculating Predicted Response for Each Seed');
+fprintf('Calculating Predicted Response for Each Seed\n');
 for i = 1:length(scan) % loop through scan
     for i2 = 1:length(seeds) % loop through seeds
-        tmp = eval([opt.model '(seeds(i2),scan(i));']);
+        tmp = callModel(opt.model, seeds(i2), scan(i));
         scan(i).seedpRF(:,i2) = tmp(:); % pRF model for each seed
     end
-    scan(i).convStim = createConvStim(scan(i), hdr); % convolve hdr with the stimulus image
-    scan(i).seedPred = pos0([scan(i).convStim] * [scan(i).seedpRF]).^scanExp; % multiply by seed pRF
+    scan(i).convStim = createConvStim(scan(i), hrf); % convolve hrf with the stimulus image
+    scan(i).seedPred = pos0(scan(i).convStim * scan(i).seedpRF).^scanExp; % multiply by seed pRF
 end
 
 %% Calculating Best Seeds
 
-disp('Calculating Best Seeds');
+fprintf('Calculating Best Seeds\n');
 parfor i = 1:nVox
     if ~opt.quiet && opt.parallel
         parallelProgressBar(nVox,  struct('title', 'Calculating Best Seed'));
     elseif ~opt.quiet && mod(i, 100) == 0 % display voxel count every 100 voxels
-        disp(sprintf('Calculating Best Seed for Voxel %d of %d', i, nVox));
+        fprintf('Calculating Best Seed: Voxel %d of %d\n', i, nVox);
     end
     
     % find best seeds to intialize pRF fitting
@@ -155,26 +155,30 @@ end
 %% Prepare 'fitParams' Structure for pRF Fitting
 
 for i = 1:nVox
-    tmp = hdr;
+    tmp = hrf;
     tmp.didFit = false;
     tmp.exp = 1;
     tmp.corr = NaN;
+    tmp.seedCorr = pRF(i).bestSeed.corr;
     for i2 = 1:length(freeName) % load 'fitParams' with bestSeed params
         tmp.(freeName{i2}) = pRF(i).bestSeed.(freeName{i2});
     end
     fitParams(i) = tmp;
 end
 
-%% Fitting pRF Model (and Estimating HDR)
+%% Fitting pRF Model (and Estimating HRF)
 
-disp('Fitting pRF Model');
-fittedParams = callFitModel(fitParams, opt.freeList, scan, pRF, opt);
+fprintf('Fitting pRF Model\n');
+fittedParams = callFitModel(fitParams, opt.freeList, scan, opt);
 
-if opt.estHDR % if estimating HDR
-    disp('Estimating HDR');
-    fittedParams = callFitModel(fittedParams, {'tau','delta'}, scan, pRF, opt);
-    hdr.fit.tau = median([fittedParams([fittedParams.didFit]).tau]);
-    hdr.fit.delta = median([fittedParams([fittedParams.didFit]).delta]);
+if ~isnan(opt.estHRF) % if estimating HRF
+    fprintf('Estimating HRF\n');
+    fittedParams = callFitHRF(fittedParams, scan, opt);
+    hrf.fit.tau = median([fittedParams.tau]);
+    hrf.fit.delta = median([fittedParams.delta]);
+    fitParams = assignfield(fitParams, 'tau', hrf.fit.tau, 'delta', hrf.fit.delta);
+    fprintf('Fitting pRF Model with Estimated HRF\n');
+    fittedParams = callFitModel(fitParams, opt.freeList, scan, opt);
 end
 opt.stopTime = datestr(now);
 
@@ -193,7 +197,7 @@ end
 %% Organize Output
 
 pRF = orderfields(pRF, ['id' 'didFit' freeName 'corr' 'tau' 'delta' 'bestSeed']);
-collated = collate(scan, seeds, hdr, pRF, opt);
+collated = collate(scan, seeds, hrf, pRF, opt);
 
 %% Final Timings
 

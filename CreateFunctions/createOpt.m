@@ -5,11 +5,12 @@ function [opt] = createOpt(type)
 % (see Outputs for the list of field names)
 %
 % Inputs:
+%   <No arg>            Returns an 'opt' structure with all fields at
+%                       default settings
 %   type                Type of 'opt' structure that should be created.
-%                       If called with no type, the function will return an
-%                       'opt' structure filled with the basic options for
-%                       each field. There are also types for commonly used
-%                       pRF fitting (i.e., 'Tonotopy')
+%                       If specified, will return an 'opt' structure with
+%                       fields with settings of the given pRF model 
+%                       (i.e., Tonotopy)
 %
 % Outputs:
 %   opt
@@ -20,29 +21,25 @@ function [opt] = createOpt(type)
 %                       cell of strings (default: {'mu', 'sigma'})
 %       roi             Name of the .voi if fitting a within a ROI, string
 %                       (default: '')
-%       fitpRF          Fit pRF (true) OR find best seed (false), logical
-%                       (default: true)
-%       estHDR          Estimate individual HDR (true) OR not (false),
-%                       logical (default: false)
-%       CSS             Fit exponential (true) OR not (false) from the 
-%                       compressive spatial summation, logical 
-%                       (default: false)
+%       estHRF          Number of iterations to estimate individual HRF. If
+%                       NaN, will not estimate HRF, numeric (default: NaN)
+%       hrfThr          Correlation threshold for voxels to be used in HRF
+%                       estimation (default: 0.25)
+%       corrThr         Correlation threshold of best seed fit for voxels 
+%                       to be used in pRF fitting (default: 0.01)
 %       corr            Name of the correlation to use as the measure of
 %                       error during fitting, also the function name,
 %                       string (default: 'pearson')
-%       corrThr         Correlation threshold where anything below will not
-%                       be fitted, numeric (default: 0.01)
+%       CSS             Fit exponential (true) OR not (false) from the 
+%                       compressive spatial summation, logical 
+%                       (default: false)
 %       cost            A structure containing parameters that will be
 %                       implemented in a cost function with fields that 
 %                       correpond to the free parameters being estimated:
-%       <parameter      Name of the free parameter with a minimum/maximum
-%             name>     bound in the cost function with fields:
-%           min         Minimum of the cost function boundary, NaN if no
-%                       boundary
-%           max         Maximum of the cost function boundary, NaN if no
-%                       boundary
-%       nSamples        Desired resolution of the stimulus image, numeric
-%                       (default: NaN)
+%       <parameter      A vector with the free parameter [minimum maximum]
+%           name(s)>    boundaries in the cost function
+%       upSample        The desired up-sampling factor to create a new
+%                       resolution of the stimulus image (default: 1)
 %       parallel        Parallel processing (true) OR not (false), logical
 %                       (default: false)
 %       quiet           Output progress in command window when fitting
@@ -62,22 +59,22 @@ if ~exist('type', 'var')
     type = 'default';
 end
 
-%% Load and Create 'opt' Structure
+%% Create 'opt' Structure
+
+flds = {'map', 'model', 'freeList', 'roi', 'estHRF', 'hrfThr', 'corrThr', ...
+    'corr', 'CSS', 'cost', 'upSample', 'parallel', 'quiet'}; % field names
 
 switch lower(type)
     case {'tonotopy', 'tono', 't'}
         vals = {'''Tonotopy''', '''Gaussian1D''', ...
-            '{{''mu'',''0.01<sigma'',''0<exp<1''}}', '''''', 'true', ...
-            'false', 'true', '''pearson''', '0.01', 'struct()', 'NaN', ...
-            'false', 'false'};
+            '{{''mu'',''0.01<sigma'',''0<exp<1''}}', '''''', 'NaN', '0.25', ...
+            '0.01', '''pearson''', 'true', 'struct()', '1', 'false', 'false'};
     case {'default'}
         vals = {'''''', '''Gaussian1D''', '{{''mu'',''sigma''}}', ...
-            '''''', 'true', 'false', 'false', '''pearson''', '0.01', ...
-            'struct()', 'NaN', 'false', 'false'};
+            '''''', 'NaN', '0.25', '0.01', '''pearson''', 'false', ...
+            'struct()', '1', 'false', 'false'};
 end
 
-flds = {'map', 'model', 'freeList', 'roi', 'fitpRF', 'estHDR', 'CSS', ...
-    'corr', 'corrThr', 'cost', 'nSamples', 'parallel', 'quiet'};
 evalStr = strcat('''', flds, '''', ',', vals);
 evalStr = strcat('struct(', strjoin(evalStr,','), ');');
 opt = eval(evalStr);

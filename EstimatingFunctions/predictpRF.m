@@ -1,6 +1,6 @@
 function [predicted] = predictpRF(collated, data)
 % [predicted] = predictpRF(collated, data)
-% 
+%
 % Returns a predicted structure containing information about the actual
 % time course from data and the predicted time course of data as predicted
 % using the model (collated)
@@ -14,13 +14,13 @@ function [predicted] = predictpRF(collated, data)
 %
 % Outputs:
 %   predicted       A structure containing information about the predicted
-%                   time course of data estimated by the pRF model 
+%                   time course of data estimated by the pRF model
 %                   (collated) with fields:
 %       id          Voxel id number
 %       tc          Voxel time course (trom data structure)
 %       pred        Predicted time course created by predicting on data
 %                   with the model (collated)
-%       corr        Correlation coefficient of the actual time course with 
+%       corr        Correlation coefficient of the actual time course with
 %                   the predicted time course
 
 % Written by Kelly Chang - July 19, 2016
@@ -29,13 +29,20 @@ function [predicted] = predictpRF(collated, data)
 
 if ~isfield(data, 'convStim')
     for i = 1:length(data)
-        data(i).convStim = createConvStim(data(i), collated.hdr);
+        data(i).convStim = createConvStim(data(i), collated.hrf);
     end
+end
+
+%% CSS Control
+
+nVox = length(data(1).vtc);
+scanExp = ones(1,nVox);
+if collated.opt.CSS
+    scanExp = [collated.pRF.exp];
 end
 
 %% Initialize 'Predicted' Structure
 
-nVox = length(data(1).vtc);
 for i = 1:length(data)
     for i2 = 1:nVox
         tmp(i2).id = data(i).vtc(i2).id;
@@ -48,12 +55,11 @@ end
 
 %% Predict Time Course
 
-disp('Starting Voxel Time Course Prediction');
 for vN = 1:nVox
     if collated.pRF(vN).didFit
         for i = 1:length(data)
-            tmp = eval(sprintf('data(i).convStim*%s(collated.pRF(vN),data(i));', collated.opt.model));
-            predicted(i).vtc(vN).pred = pos0(tmp) .^ collated.pRF(vN).exp;
+            tmp = data(i).convStim * callModel(collated.opt.model, collated.pRF(vN), data(i));
+            predicted(i).vtc(vN).pred = pos0(tmp) .^ scanExp(i);
             
             predicted(i).vtc(vN).corr = callCorr(predicted(i).vtc(vN).tc, ...
                 predicted(i).vtc(vN).pred, collated.opt.corr);

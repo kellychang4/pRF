@@ -1,7 +1,8 @@
 function [coef] = callCorr(x, y, corrName)
 % [coef] = callCorr(x, y, corrName)
 %
-% Calculates the specified correlation coefficient for x and y
+% Wrapper function that calls the specified correlation function to 
+% calculate the correltion coefficient for x and y
 % 
 % Inputs: 
 %   x           The first data series (column)
@@ -13,7 +14,7 @@ function [coef] = callCorr(x, y, corrName)
 % Output:
 %   coef        The correlation coefficient
 
-% Written by Kelly Chang for pRF fitting - July 12, 2016
+% Written by Kelly Chang for pRF package - July 12, 2016
 
 %% Call Correlation Function
 

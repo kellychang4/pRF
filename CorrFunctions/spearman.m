@@ -9,7 +9,7 @@ function [coef] = spearman(x,y)
 %               multiple columns
 %
 % Output:
-%   coef        The Spearman correlation coefficient
+%   coef        The Spearman rank correlation coefficient
 
 % Written by Kelly Chang - July 18, 2016
 

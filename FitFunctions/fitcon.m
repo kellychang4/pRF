@@ -29,9 +29,9 @@ function [params,err] = fitcon(funName, params, freeList, varargin)
 %
 % fitminsearchcon, params2varcon, var2params, fitFun
 
-% Written by Geoffrey M. Boynton, 9/26/14
-% Adapted from 'fit.m' written by gmb in the summer of '00
-% Edited by Kelly Chang for pRF fitting - June 21, 2016
+% Written by Geoffrey M. Boynton - September 26, 2014
+% Adapted from 'fit.m' written by gmb - Summer 2000
+% Edited by Kelly Chang for pRF package - June 21, 2016
 
 %% Input Control
 
@@ -44,6 +44,10 @@ end
 
 if isempty(freeList)
     freeList = fieldnames(params);
+end
+
+if ischar(freeList) 
+    freeList = {freeList};
 end
 
 %% Turn Initial Free Parameters into vars, lower, and upper bounds

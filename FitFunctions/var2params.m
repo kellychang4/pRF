@@ -15,12 +15,12 @@ function [params] = var2params(var, params, freeList)
 % Outputs:
 %   params      Same 'params' structure with parameter values as field 
 %               names that correspond with the parameter names in 
-%               'freeList' replaced with the values (in order) from 'var'
+%               'freeList' with the values (in order) from 'var'
 
 % Written by gmb - Summer of '00
-% Edited by Kelly Chang for pRF fitting - June 21, 2016
+% Edited by Kelly Chang for pRF package - June 21, 2016
 
-%% Transform 'var' into Structure 'params'
+%% Transforms 'var' into Structure 'params'
 
 for i = 1:length(freeList)
     params.(freeList{i}) = var(i);

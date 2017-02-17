@@ -26,7 +26,7 @@ function parallelProgressBar(n, opt)
 
 % Adapted primarily from 'parfor_progress.m' by Jeremy Scheff
 % Link: http://www.mathworks.com/matlabcentral/fileexchange/32101-progress-monitor--progress-bar--that-works-with-parfor
-% Modified by Kelly Chang for pRF fitting - June 22, 2016
+% Modified by Kelly Chang for pRF package - June 22, 2016
 
 %% Input Control
 

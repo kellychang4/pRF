@@ -12,7 +12,7 @@ function [seeds] = createSeeds(opt)
 %   opt                  A structure containing fields for creating the 
 %                        'seed' structure:
 %       <parameter       A vector that specifies all possible seeds for 
-%          name(s)>      the given <parameter name>, numeric
+%          name(s)>      the given <parameter name(s)>, numeric
 %                        (i.e., linespace(0.5, 4, 100))
 %             
 % Outputs:

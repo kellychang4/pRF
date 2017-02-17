@@ -1,29 +1,26 @@
-function [opt] = openParallel(opt)
-% [opt] = openParallel(opt)
+function [parallelOpt] = openParallel(parallelOpt)
+% [parallelOpt] = openParallel(parallelOpt)
 %
-% Opens all available parallel cores
+% Opens all available parallel cores, if there are parallel cores
 % 
 % Input:
-%   opt               A structure containing options for parallel
-%                     processing with the field: 
-%       parallel      Open parallel cores (true) OR not (false), logical
+%   parallelOpt       Open parallel cores (true) OR not (false), logical
 %                     (default: false)
-% 
+%
 % Output:
-%   opt               Same opt structure, but with additional fields filled
-%                     in (if they were not already)  
+%   parallelOpt       Parallel cores opened (true) or not (false), logical
 
 % Written by Kelly Chang - July 19, 2016
 
 %% Input Control
 
-if ~exist('opt', 'var') || ~isfield(opt, 'parallel')
-    opt.parallel = false;
+if ~exist('parallelOpt', 'var')
+    parallelOpt = false;
 end
 
 %% Open Parallel Cores
 
-if opt.parallel
+if parallelOpt
     try
         p = gcp('nocreate'); % check for pool information
         if isempty(p) % if no pool is currently open
@@ -31,6 +28,6 @@ if opt.parallel
             parpool(parallel.defaultClusterProfile, p.NumWorkers);
         end
     catch ME % if there is no parallel pools available
-        opt.parallel = false; % reset opt.parallel to be false
+        parallelOpt = false; % reset flag to be false
     end
 end

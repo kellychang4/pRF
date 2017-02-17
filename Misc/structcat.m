@@ -15,7 +15,7 @@ function [S] = structcat(varargin)
 %                   the given structure(s, will add an increment to the end
 %                   of the field names with multiples
 
-% Written  by Kelly Chang - June 21, 2016
+% Written by Kelly Chang - June 21, 2016
 
 %% Error Checking
 

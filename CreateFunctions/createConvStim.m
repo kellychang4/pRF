@@ -1,8 +1,9 @@
-function [convStim] = createConvStim(scan, hdr)
-% [convStim] = createConvStim(scan, hdr)
+function [convStim] = createConvStim(scan, hrf)
+% [convStim] = createConvStim(scan, hrf)
 %
-% Calulates the hemodynamic response and find the convolution of the
-% hemodynamic response with the stimulus
+% Calulates the hemodynamic response and outputs the convolution of the
+% hemodynamic response with the stimulus as a 2D matrix, regardless of how
+% many stimuli dimensions there are
 %
 % Inputs:
 %   scan            A structure containing all scan information, but must
@@ -11,25 +12,32 @@ function [convStim] = createConvStim(scan, hdr)
 %                   stimImg = createStimImg(scan, opt)
 %       TR          The scan TR (seconds)
 %       nVols       The number of volumes in the scan
-%   hdr             A structure contain all hemodynamic response
-%                   information as given by hdr = createHDR(hdrOpt)
+%       paradigm    A structure contain the paradigm sequences for each
+%                   stimulus dimension
+%   hrf             A structure contain all hemodynamic response
+%                   information as given by hrf = createHRF(hrfOpt)
 %
 % Outputs:
-%   convStim        The convolution of the hemodynamic response (hdr) with
-%                   the stimulus
+%   convStim        The convolution of the hemodynamic response function
+%                   (hrf) with the stimulus
 
 % Written by Kelly Chang - June 21, 2016
 
-%% Convolve Stimulus Image with HDR
+%% Convolve Stimulus Image with HRF
 
-hemo = GammaHDR(hdr, hdr)';
-tmp = scan.TR * convn(scan.stimImg, hemo);
-stimulusInterval = scan.dur / length(scan.paradigm);
-if stimulusInterval == scan.TR % if stimulus time locked with TRs
-    convStim(:,:) = tmp(1:scan.nVols, :);
+hemo = GammaHRF(hrf, hrf);
+tmp = scan.TR * convn(scan.stimImg, hemo(:));
+stimInterval = scan.dur / unique(structfun(@length, scan.paradigm));
+if stimInterval == scan.TR % if stimulus time locked with TRs
+    convStim = eval(sprintf('tmp(1:scan.nVols%s);', repmat(',:',1,ndims(tmp)-1)));
 else % else interpolate from stimulus time to TR time
-    stimTiming = lengthOut(0, stimulusInterval, numel(scan.stimImg));
-    volTiming = lengthOut(0, scan.TR, scan.nVols*size(scan.stimImg,2));
-    tmp = spline(stimTiming(:), tmp(1:size(stimTiming,2)), volTiming(:));
-    convStim = reshape(tmp, scan.nVols, []);
+    stimSize = size(scan.stimImg);
+    tmp = eval(sprintf('tmp(1:stimImgSize(1)%s);', repmat(',:',1,ndims(tmp)-1)));
+    stimTiming = lengthOut(0, stimInterval, numel(tmp));
+    volTiming = lengthOut(0, scan.TR, scan.nVols*prod(stimSize(2:end)));
+    convStim = spline(stimTiming(:), tmp(:), volTiming(:));
+    convStim = eval(sprintf('reshape(convStim,[scan.nVols %s]);', strjoin(arrayfun(@(x) ...
+        sprintf('stimSize(%d)',x), 2:ndims(scan.stimImg), 'UniformOutput', false), ' ')));
 end
+tmp = size(convStim);
+convStim = reshape(convStim, [tmp(1) prod(tmp(2:end))]);

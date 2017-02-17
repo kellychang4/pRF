@@ -16,7 +16,7 @@ function [out] = upper1(str)
 
 %% Capitalize First Letter of String(s)
 
-if ~iscell(str)
+if ischar(str) && ~iscell(str)
     out = strcat(upper(str(1)), lower(str(2:end)));
 else
     out = cellfun(@(x) strcat(upper(x(1)),lower(x(2:end))), str, ...
