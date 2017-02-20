@@ -58,7 +58,7 @@ end
 %% Interpolate Up Sampled Resolution of Image
 
 for i = 1:length(paramNames.funcOf)
-    scan.(paramNames.funcOf{i}) = interp1(1:pt.upSample:length(scan.k.(paramNames.funcOf{i}))*opt.upSample, ...
+    scan.(paramNames.funcOf{i}) = interp1(1:opt.upSample:length(scan.k.(paramNames.funcOf{i}))*opt.upSample, ...
         scan.k.(paramNames.funcOf{i}), 1:(length(scan.k.(paramNames.funcOf{i}))*opt.upSample));
     scan.(paramNames.funcOf{i}) = scan.(paramNames.funcOf{i})(1:end-(opt.upSample-1));
 end
