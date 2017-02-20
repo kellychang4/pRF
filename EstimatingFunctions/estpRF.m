@@ -84,7 +84,7 @@ if any(ismember(freeName, paramNames.params) == 0)
 end
 
 % if cost parameter is not all within the free parameters, excluding 'tau' and 'delta'
-if ~isempty(fieldnames(opt.cost)) && ~all(ismember(freeName, setdiff(fieldnames(opt.cost), {'tau', 'delta'})))
+if ~isempty(fieldnames(opt.cost)) && ~all(ismember(setdiff(fieldnames(opt.cost), {'tau', 'delta'}), freeName))
     errFlds = setdiff(setdiff(fieldnames(opt.cost), {'tau', 'delta'}), freeName);
     error('Cost parameter(s) not found in the free parameters: %s', ...
         strjoin(errFlds, ', '))
