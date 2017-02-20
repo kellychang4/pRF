@@ -34,7 +34,7 @@ for i = 1:length(scan)
     pred = pos0(tmp) .^ fitParams.exp;
     
     tc = [scan(i).vtc.tc];
-    tmp = callCorr(tc(:,vN), pred, opt.corr);
+    tmp = feval(opt.corr, tc(:,vN), pred);
     corr = corr + tmp;
 end
 err = -corr/length(scan); % mean (negative) cross correlation across all scans
