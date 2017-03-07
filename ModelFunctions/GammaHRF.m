@@ -25,7 +25,7 @@ function [out] = GammaHRF(params, funcOf)
 
 % Written by G.M. Boynton at Stanford University - June 27, 1995
 % Simplified for Psychology 448/538 at U.W. - April 19, 1999
-% Modified by Kelly Chang for pRF package - May 29, 2016
+% Modified by Kelly Chang for pRF - May 29, 2016
 
 %% Equation
 

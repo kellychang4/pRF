@@ -11,7 +11,7 @@ function [opt] = plotParams(collated, opt)
 %                   the parameters histograms where M is the number of
 %                   plots desired with fields:
 %       params      Parameter names to be plotted (default: first 16
-%                   parameters available in 'collated')
+%                   parameters available in 'collated' except tau + delta)
 %       bestSeed    Plot best seed parameters (true) OR not (false),
 %                   logical (default: false)
 %       corrThr     Correlation threshold to index parameter values by,
@@ -44,7 +44,8 @@ for i = 1:length(opt)
     
     if ~isfield(opt(i), 'params') || isempty(opt(i).params)
         if ~opt(i).bestSeed % pRF parameters
-            opt(i).params = setdiff(fieldnames(collated.pRF), {'id', 'didFit', 'bestSeed'});
+            opt(i).params = setdiff(fieldnames(collated.pRF), ...
+                {'id', 'didFit', 'tau', 'delta', 'bestSeed'});
         else % best seed parameters
             opt(i).params = setdiff(fieldnames(bestSeed), {'seedID'});
         end
