@@ -24,7 +24,6 @@ function [fittedParams] = callFitModel(fitParams, freeList, scan, opt)
 nVox = length(scan(1).vtc);
 freeName = regexprep(freeList, '[^A-Za-z]', '');
 parallelOpt.title = sprintf('Estimating: %s', strjoin(freeName, ' & '));
-opt.estHRF = NaN; % not fitting HRF in this function
 
 %% Fitting Model
 

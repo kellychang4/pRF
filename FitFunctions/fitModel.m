@@ -20,16 +20,13 @@ function [err] = fitModel(fitParams, vN, scan, opt)
 %   front of the cross-correlation to make it negative
 
 % Written by Jessica Thomas - October 20, 2014
-% Edited by Kelly Chang for pRF package - June 21, 2016
+% Edited by Kelly Chang for pRF - June 21, 2016
 
 %% Fit pRF Model
 
 corr = 0;
 for i = 1:length(scan)
-    if ~isnan(opt.estHRF)
-        scan(i).convStim = createConvStim(scan(i), fitParams); 
-    end
-    
+    scan(i).convStim = createConvStim(scan(i), fitParams);
     tmp = scan(i).convStim * callModel(opt.model, fitParams, scan(i));
     pred = pos0(tmp) .^ fitParams.exp;
     
