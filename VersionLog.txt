@@ -26,7 +26,7 @@
 
 ### Version 2.1
 - ~~~~!!!!!~~~~ WIP WIP WIP WIP WIP ~~~~!!!!!~~~~
-- Idea stage, please don't take these version notes as ideas to be done
+- Added Tutorial Folder with first tutorial: Basics of pRF modeling and decoding a stimulus sequence
 - should include without BV compatibility (maybe for another version...) for other programs
 - createScan is too BV optimized, if some fields fail it should not be a catastrophic failure
 - doesn't mean i shouldn't include more functionality for BV...
