@@ -21,6 +21,7 @@ Code for fitting population receptive fields (Dumoulin & Wandell, 2008) for mult
 3. Edit Pathing to Directories
 	* Uncomment directories section and edit as based on your computer's pathing
 	<br>
+	
 	```matlab
 	% paths = createPaths(); % initialize paths structure
 	% paths.data = fullfile(paths.main, 'Ver2.0', 'Demo', 'DemoData'); % path to demostration data directory
