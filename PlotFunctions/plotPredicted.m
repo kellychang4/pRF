@@ -57,11 +57,12 @@ allScans = cellfun(@(x) x(opt.voxel), struct2cell(predicted'));
 actual = ascolumn([allScans.tc]);
 pred = ascolumn([allScans.pred]);
 t = lengthOut(0, collated.scan(1).TR, size(actual,1));
+tPred = lengthOut(0, collated.scan(1).dur/size(pred,1), size(pred,1));
 
-figure(); 
+figure();
 subplot(2,1,1); hold on;
 plot(t, zscore(actual), 'Color', [0.75 0.75 0.75]);
-plot(t, zscore(pred), 'r--');
+plot(tPred, zscore(pred), 'r--');
 plot(repmat(btwScan,1,2), ylim, 'g');
 xlabel('Time (s)');
 title(sprintf('Voxel %d (%d)', opt.voxel, predicted(opt.scan).vtc(opt.voxel).id));
@@ -69,14 +70,18 @@ axis tight
 
 %% Individual Scan
 
-paramNames = eval(collated.opt.model);
-breaks = asrow(find(isnan(collated.scan(opt.scan).paradigm.(paramNames.funcOf{1}))) * ...
-    (collated.scan(opt.scan).dur/length(collated.scan(opt.scan).paradigm.(paramNames.funcOf{1}))));
+tPred = lengthOut(0, collated.scan(opt.scan).dur/size(predicted(opt.scan).vtc(opt.voxel).pred,1), ...
+    size(predicted(opt.scan).vtc(opt.voxel).pred,1));
 
 subplot(2,1,2); hold on;
 plot(collated.scan(opt.scan).t, zscore(predicted(opt.scan).vtc(opt.voxel).tc), 'Color', [0.75 0.75 0.75]);
-plot(collated.scan(opt.scan).t, zscore(predicted(opt.scan).vtc(opt.voxel).pred), 'r--');
-plot(repmat(breaks,2,1), ylim, ':', 'Color', [0 .65 0]);
+plot(tPred, zscore(predicted(opt.scan).vtc(opt.voxel).pred), 'r--');
+if isfield(collated.scan(1), 'paradigm')
+    paramNames = eval(collated.opt.model);
+    breaks = asrow(find(isnan(collated.scan(opt.scan).paradigm.(paramNames.funcOf{1}))) * ...
+        (collated.scan(opt.scan).dur/length(collated.scan(opt.scan).paradigm.(paramNames.funcOf{1}))));
+    plot(repmat(breaks,2,1), ylim, ':', 'Color', [0 .65 0]);
+end
 xlabel('Time (s)');
 title(sprintf('Voxel %d (%d)\nScan %d', opt.voxel, ...
     predicted(opt.scan).vtc(opt.voxel).id, opt.scan));

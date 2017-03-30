@@ -41,7 +41,7 @@ function [scan] = extractStimImg(scan, scanOpt, nScan, opt)
 %% Extract Stimulus Image
 
 load(scanOpt.paradigmPath{nScan}); % load paradigm file
-stimImg = eval(scanOpt.stimImg);
+stimImg = eval(scanOpt.stimImg{nScan});
 
 %% Extract Stimulus Dimensions
 

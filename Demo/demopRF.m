@@ -53,7 +53,7 @@ seeds = createSeeds(seedOpt); % creating 'seeds' structure
 
 % hdr options
 hrfOpt.type = 'audition';
-hrfOpt.TR = scan(1).TR;
+hrfOpt.dt = scan(1).TR;
 
 hrf = createHRF(hrfOpt); % creating 'hdr' structure
 

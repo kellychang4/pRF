@@ -33,7 +33,7 @@ if ~isfield(data, 'convStim')
     end
 end
 
-%% CSS Control
+%% CSS Input Control
 
 nVox = length(data(1).vtc);
 scanExp = ones(1,nVox);
@@ -58,11 +58,11 @@ end
 for vN = 1:nVox
     if collated.pRF(vN).didFit
         for i = 1:length(data)
-            tmp = data(i).convStim * callModel(collated.opt.model, collated.pRF(vN), data(i));
+            tmp = data(i).convStim * ascolumn(callModel(collated.opt.model, collated.pRF(vN), data(i)));
             predicted(i).vtc(vN).pred = pos0(tmp) .^ scanExp(i);
             
-            predicted(i).vtc(vN).corr = feval(collated.opt.corr, ...
-                predicted(i).vtc(vN).tc, predicted(i).vtc(vN).pred);
+            predicted(i).vtc(vN).corr = callCorr(collated.opt.corr, ...
+                predicted(i).vtc(vN).tc, predicted(i).vtc(vN).pred, data(i));
         end
     end
 end

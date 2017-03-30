@@ -128,21 +128,21 @@ fprintf('Calculating Best Seeds\n');
 parfor i = 1:nVox
     if ~opt.quiet && opt.parallel
         parallelProgressBar(nVox,  struct('title', 'Calculating Best Seed'));
-    elseif ~opt.quiet && mod(i, 100) == 0 % display voxel count every 100 voxels
+    elseif ~opt.quiet && mod(i,floor(nVox/10)) == 0 % display voxel count every 100 voxels
         fprintf('Calculating Best Seed: Voxel %d of %d\n', i, nVox);
     end
     
     % find best seeds to intialize pRF fitting
     seedMat = NaN(length(scan), length(seeds)); % initialize predicted seeds matrix
     for i2 = 1:length(scan)
-        seedMat(i2,:) = feval(opt.corr, scan(i2).vtc(i).tc, scan(i2).seedPred);
+        seedMat(i2,:) = callCorr(opt.corr, scan(i2).vtc(i).tc, scan(i2).seedPred, scan(i2));
     end
     seedMat = mean(seedMat,1); % average across scan
     [maxCorr,bestSeedIndx] = max(seedMat); % find best seeds
     
     % save seeds fits
     bestSeed = seeds(bestSeedIndx);
-    bestSeed = rmfield(bestSeed, setdiff(fieldnames(bestSeed), freeName))
+    bestSeed = rmfield(bestSeed, setdiff(fieldnames(bestSeed), freeName));
     bestSeed.seedID = bestSeedIndx;
     bestSeed.corr = maxCorr;
     pRF(i).bestSeed = orderfields(bestSeed, ...
@@ -179,6 +179,9 @@ if ~isnan(opt.estHRF) % if estimating HRF
     fitParams = assignfield(fitParams, 'tau', hrf.fit.tau, 'delta', hrf.fit.delta);
     fprintf('Fitting pRF Model with Estimated HRF\n');
     fittedParams = callFitModel(fitParams, opt.freeList, scan, opt);
+    for i = 1:length(scan) % update convolved stimulus
+        scan(i).convStim = createConvStim(scan(i), fittedParams);
+    end
 end
 opt.stopTime = datestr(now);
 

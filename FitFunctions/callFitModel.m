@@ -31,7 +31,7 @@ fittedParams = fitParams;
 parfor i = 1:nVox
     if ~opt.quiet && opt.parallel
         parallelProgressBar(nVox, parallelOpt);
-    elseif ~opt.quiet && mod(i,100) == 0 % display voxel count every 100 voxels
+    elseif ~opt.quiet && mod(i,floor(nVox/10)) == 0 % display voxel count every 100 voxels
         fprintf('Fitting pRF: Voxel %d of %d\n', i, nVox);
     end
     if ~isnan(fitParams(i).seedCorr) && fitParams(i).seedCorr > opt.corrThr

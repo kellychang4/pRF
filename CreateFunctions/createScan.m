@@ -107,6 +107,14 @@ if isfield(scanOpt, 'paradigm') && ~all(ismember(paramNames.funcOf, fieldnames(s
     error('Must specify paradigm for variable: %s', strjoin(errFlds, ', '));
 end
 
+if isfield(scanOpt, 'stimImg') && ischar(scanOpt.stimImg)
+    scanOpt.stimImg = {scanOpt.stimImg};
+end
+
+if isfield(scanOpt, 'stimImg') && length(scanOpt.stimImg) ~= length(scanOpt.vtcPath)
+    scanOpt.stimImg = repmat(scanOpt.stimImg,1,length(scanOpt.vtcPath));
+end
+
 if ~isempty(opt.roi) && isempty(scanOpt.voiPath)
     error('No ''scanOpt.voiPath'' when ''opt.roi'' is specified');
 end

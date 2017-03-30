@@ -38,7 +38,7 @@ for i = 1:opt.estHRF
     parfor nV = 1:sum(indx) % for each voxel
         if ~opt.quiet && opt.parallel
             parallelProgressBar(sum(indx), struct('title', sprintf(parallelTitle,i)));
-        elseif ~opt.quiet && mod(nV,100) == 0 % display voxel count every 100 voxels
+        elseif ~opt.quiet && mod(nV,floor(sum(indx)/10)) == 0 % display voxel count every 100 voxels
             fprintf('Fitting HRF: Voxel %d of %d\n', nV, sum(indx));
         end
         fittedParams(nV) = fitcon('fitModel', fittedParams(nV), ...
