@@ -14,14 +14,14 @@ function [hrf] = createHRF(opt)
 %                  tau and delta to be manually defined.
 %       tau        Time constant, only used if no type specified
 %       delta      Delay (seconds), only used if no type specified
-%       TR         Scan TR (seconds), time vector step size
+%       dt         Time vector step size, seconds
 %       n          Phase delay (Default: 3)
 %       maxt       Ending time, seconds (Default: 30)
 %
 % Outputs:
 %   hrf            A structure containing hrf information with fields:
 %       n          Phase delay (opt.n)
-%       dt         Time vector step size (opt.TR)
+%       dt         Time vector step size, seconds
 %       t          Time vector (0:opt.TR:opt.maxt)
 %       tau        Time constant, either a canonical tau for vision or
 %                  audition or manually specified
@@ -40,8 +40,8 @@ if ~isfield(opt, 'type')
     end
 end
 
-if ~isfield(opt, 'TR')
-    error('Must specify opt.TR');
+if ~isfield(opt, 'dt')
+    error('Must specify time vector step size, dt');
 end
 
 if ~isfield(opt, 'n')
@@ -55,13 +55,13 @@ end
 %% Create 'hrf' Structure
 
 hrf.n = opt.n;
-hrf.dt = opt.TR;
-hrf.t = 0:opt.TR:opt.maxt;
+hrf.dt = opt.dt;
+hrf.t = 0:hrf.dt:opt.maxt;
 switch opt.type
-    case {'vision', 'vis', 1} % predefined hrf for vision
+    case {'vision', 'vis', 'v', 1} % predefined hrf for vision
         hrf.tau = 1.5;
         hrf.delta = 2.25;
-    case {'audition', 'aud', 2} % predefined hrf for audition (see Talvage)
+    case {'audition', 'auditory', 'aud', 'a', 2} % predefined hrf for audition (see Talvage)
         hrf.tau = 1.5;
         hrf.delta = 1.8;
     otherwise

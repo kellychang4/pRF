@@ -25,7 +25,8 @@ function [out] = callModel(model, params, funcOf)
 
 paramNames = eval(model);
 if length(paramNames.funcOf) > 1 % greater than 1D
-    eval(sprintf('[funcOf.%s]=meshgrid(funcOf.%s);', strjoin(paramNames.funcOf, ',funcOf.'), ...
-        strjoin(paramNames.funcOf, ',funcOf.')))
+    eval(sprintf('[funcOf.%s]=meshgrid(funcOf.%s);',...
+        strjoin(fliplr(paramNames.funcOf), ',funcOf.'), ...
+        strjoin(fliplr(paramNames.funcOf), ',funcOf.')))
 end
 out = feval(model, params, funcOf); 

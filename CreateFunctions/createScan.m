@@ -9,9 +9,14 @@ function [scan] = createScan(scanOpt, opt)
 %                            'scan' structure with fields:
 %       vtcPath              Path(s) to all .vtc files, string
 %       paradigmPath         Path(s) to all .mat paradigm files, string
-%       paradigm             A structure containg the variable name(s) of
-%                            paradigm sequence(s) located within paradigm
-%                            files (i.e., [scanOpt.paradgim.<var>])
+%       paradigm             A structure containing variable name(s) of the
+%                            paradigm sequence(s) located within the
+%                            paradigm files (i.e., scanOpt.paradigm.<var>);
+%                            optional, specifying will create the stimulus
+%                            image
+%       stimImg              Name of the stimulus image variable within the
+%                            paradigm file(s), string; optional, specifying
+%                            will use this variable as the stimulus image
 %       voiPath              Path to .voi file, string
 %   opt                      A structure containing option for pRF model
 %                            fitting containing fields:
@@ -28,16 +33,16 @@ function [scan] = createScan(scanOpt, opt)
 %                            .vtc and scan's information with fields:
 %       paradigmFile         Name of paradigm file , string
 %                            (i.e., 'Subj1_Paradigm_Set1.mat')
-%       paradigm             A structure containing the paradigm sequences 
+%       paradigm             A structure containing the paradigm sequences
 %                            for each stimulus dimension given as fields:
 %           <funcOf          Stimulus paradigm sequence, should be given in
 %             parameters>    units that are to be estimated for each
 %                            stimulus dimension, blanks should be coded as
 %                            NaNs, numeric
-%       k                    A structure containing the unique stimulus 
+%       k                    A structure containing the unique stimulus
 %                            values for each stimulus dimension given as
 %                            fields:
-%           <funcOf          Unique stimukus values for each stimulus 
+%           <funcOf          Unique stimukus values for each stimulus
 %             parameters>    dimension, excludes NaNs
 %                            (i.e., unique(scan.paradigm))
 %       vtcFile              Name of the .vtc file, string
@@ -52,9 +57,9 @@ function [scan] = createScan(scanOpt, opt)
 %           tc               Time course of the indexed voxel
 %       <model funcOf>       Upsampled (or not) unique units of the given
 %                            stimulus
-%       stimImg              A MxNix...xNn matrix where M is the number of
-%                            volumes of the scan and Ni through Nn is the 
-%                            length(scan.<funcOf>) or the desired 
+%       stimImg              A M x Ni x ... x Nn matrix where M is the
+%                            number of volumes of the scan and Ni through
+%                            Nn is the length(scan.<funcOf>) or the desired
 %                            resolution of the stimulus image for each
 %                            stimulus dimension
 %
@@ -68,8 +73,6 @@ function [scan] = createScan(scanOpt, opt)
 if ~isfield(scanOpt, 'voiPath')
     scanOpt.voiPath = '';
 end
-
-%% Error Check
 
 if isempty(scanOpt.vtcPath)
     error('No .vtc files selected');
@@ -89,12 +92,17 @@ if length(scanOpt.vtcPath) ~= length(scanOpt.paradigmPath)
     error('All vtc files must have corresponding paradigm files');
 end
 
-if ~isfield(scanOpt, 'paradigm') || isempty(scanOpt.paradigm)
-    error('Must specify ''scanOpt.paradigm''');
+if (~isfield(scanOpt, 'paradigm') || isempty(scanOpt.paradigm)) && ...
+        (~isfield(scanOpt, 'stimImg') || isempty(scanOpt.stimImg))
+    error('Must specify ''scanOpt.paradigm.<var>'' or ''scanOpt.stimImg''');
+end
+
+if isfield(scanOpt, 'paradigm') && isfield(scanOpt, 'stimImg')
+    error('Cannot specify both ''scanOpt.paradigm.<var>'' and ''scanOpt.stimImg''');
 end
 
 paramNames = eval(opt.model);
-if ~all(ismember(fieldnames(scanOpt.paradigm), paramNames.funcOf))
+if isfield(scanOpt, 'paradigm') && ~all(ismember(paramNames.funcOf, fieldnames(scanOpt.paradigm)))
     errFlds = setdiff(paramNames.funcOf, fieldnames(scanOpt.paradigm));
     error('Must specify paradigm for variable: %s', strjoin(errFlds, ', '));
 end
@@ -112,14 +120,6 @@ if ~isempty(scanOpt.voiPath) && isempty(opt.roi)
     opt.roi = [opt.roi '.voi'];
 end
 
-if ischar(scanOpt.vtcPath)
-    scanOpt.vtcPath = {scanOpt.vtcPath};
-end
-
-if ischar(scanOpt.paradigmPath)
-    scanOpt.paradigmPath = {scanOpt.paradigmPath};
-end
-
 %% .vtc File Name(s)
 
 [~,tmp] = cellfun(@fileparts, scanOpt.vtcPath, 'UniformOutput', false);
@@ -134,7 +134,7 @@ paradigmFile = strcat(tmp, ext);
 
 for i = 1:length(scanOpt.vtcPath)
     if ~opt.quiet
-        disp(['Loading: ' vtcFile{i}]);
+        fprintf('Loading: %s\n', vtcFile{i});
     end
     
     bc = BVQXfile(scanOpt.vtcPath{i}); % load .vtc file
@@ -145,17 +145,17 @@ for i = 1:length(scanOpt.vtcPath)
         vtc = fullVTC(bc);
     end
     
-    load(scanOpt.paradigmPath{i}); % load paradigm file
-    
     tmpScan.paradigmFile = paradigmFile{i}; % paradigm file name
-    for i2 = 1:length(paramNames.funcOf)
-        tmpScan.paradigm.(paramNames.funcOf{i2}) = eval(['[' scanOpt.paradigm.(paramNames.funcOf{i2}) '];']);
-        tmpScan.k.(paramNames.funcOf{i2}) = unique(tmpScan.paradigm.(paramNames.funcOf{i2})(~isnan(tmpScan.paradigm.(paramNames.funcOf{i2}))));
-    end    
-    
-    % error check
-    if length(unique(structfun(@length, tmpScan.paradigm))) > 1
-        error('Given paradigm sequences mismatch in length');
+    if isfield(scanOpt, 'paradigm') % if specifying with paradigm sequence
+        load(scanOpt.paradigmPath{i}); % load paradigm file
+        for i2 = 1:length(paramNames.funcOf)
+            tmpScan.paradigm.(paramNames.funcOf{i2}) = eval(['[' scanOpt.paradigm.(paramNames.funcOf{i2}) '];']);
+            tmpScan.k.(paramNames.funcOf{i2}) = unique(tmpScan.paradigm.(paramNames.funcOf{i2})(~isnan(tmpScan.paradigm.(paramNames.funcOf{i2}))));
+        end
+        % error check
+        if length(unique(structfun(@length, tmpScan.paradigm))) > 1
+            error('Given paradigm sequences mismatch in length');
+        end
     end
     
     tmpScan.vtcFile = vtcFile{i}; % name of the .vtc file
@@ -165,5 +165,9 @@ for i = 1:length(scanOpt.vtcPath)
     tmpScan.dur = tmpScan.nVols*tmpScan.TR; % scan duration, seconds
     tmpScan.t = 0:tmpScan.TR:(tmpScan.dur-tmpScan.TR); % time vector, seconds
     tmpScan.vtc = vtc; % voxel time course
-    scan(i) = createStimImg(tmpScan, opt); % collect into one 'scan' stucture
+    if isfield(scanOpt, 'paradigm') % create stimImg and collect into one 'scan' stucture
+        scan(i) = createStimImg(tmpScan, opt);
+    elseif isfield(scanOpt, 'stimImg'); % extract stimImg and collect into one 'scan' structure
+        scan(i) = extractStimImg(tmpScan, scanOpt, i, opt); 
+    end
 end

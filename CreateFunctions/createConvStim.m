@@ -12,8 +12,6 @@ function [convStim] = createConvStim(scan, hrf)
 %                   stimImg = createStimImg(scan, opt)
 %       TR          The scan TR (seconds)
 %       nVols       The number of volumes in the scan
-%       paradigm    A structure contain the paradigm sequences for each
-%                   stimulus dimension
 %   hrf             A structure contain all hemodynamic response
 %                   information as given by hrf = createHRF(hrfOpt)
 %
@@ -27,17 +25,5 @@ function [convStim] = createConvStim(scan, hrf)
 
 hemo = GammaHRF(hrf, hrf);
 tmp = scan.TR * convn(scan.stimImg, hemo(:));
-stimInterval = scan.dur / unique(structfun(@length, scan.paradigm));
-if stimInterval == scan.TR % if stimulus time locked with TRs
-    convStim = eval(sprintf('tmp(1:scan.nVols%s);', repmat(',:',1,ndims(tmp)-1)));
-else % else interpolate from stimulus time to TR time
-    stimSize = size(scan.stimImg);
-    tmp = eval(sprintf('tmp(1:stimImgSize(1)%s);', repmat(',:',1,ndims(tmp)-1)));
-    stimTiming = lengthOut(0, stimInterval, numel(tmp));
-    volTiming = lengthOut(0, scan.TR, scan.nVols*prod(stimSize(2:end)));
-    convStim = spline(stimTiming(:), tmp(:), volTiming(:));
-    convStim = eval(sprintf('reshape(convStim,[scan.nVols %s]);', strjoin(arrayfun(@(x) ...
-        sprintf('stimSize(%d)',x), 2:ndims(scan.stimImg), 'UniformOutput', false), ' ')));
-end
-tmp = size(convStim);
-convStim = reshape(convStim, [tmp(1) prod(tmp(2:end))]);
+convStim = eval(sprintf('tmp(1:size(scan.stimImg,1)%s);', repmat(',:',1,ndims(tmp)-1)));
+convStim = reshape(convStim, size(convStim,1), []);

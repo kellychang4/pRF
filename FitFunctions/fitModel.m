@@ -27,11 +27,12 @@ function [err] = fitModel(fitParams, vN, scan, opt)
 corr = 0;
 for i = 1:length(scan)
     scan(i).convStim = createConvStim(scan(i), fitParams);
-    tmp = scan(i).convStim * callModel(opt.model, fitParams, scan(i));
+    model = callModel(opt.model, fitParams, scan(i));
+    tmp = scan(i).convStim * model(:);
     pred = pos0(tmp) .^ fitParams.exp;
     
     tc = [scan(i).vtc.tc];
-    tmp = feval(opt.corr, tc(:,vN), pred);
+    tmp = callCorr(opt.corr, tc(:,vN), pred, scan(i));
     corr = corr + tmp;
 end
 err = -corr/length(scan); % mean (negative) cross correlation across all scans

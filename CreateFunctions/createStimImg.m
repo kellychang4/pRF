@@ -1,8 +1,8 @@
 function [scan] = createStimImg(scan, opt)
 % [scan] = createStimImg(scan, opt)
 %
-% Creates a MxN stimulus image where M is the number of volumes in the scan
-% (time progresses down the y-axis) and N is the length upsampled (or not)
+% Creates a MxNi stimulus image where M is the number of volumes in the scan
+% (time progresses down the y-axis) and Ni is the length upsampled (or not)
 % unique units of the stimulus. 1s in the matrix indicate when and which
 % stimulus was presented depending on the row (when, volume number) and
 % column (which, upsampled (or not) stimulus index)
