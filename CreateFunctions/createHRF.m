@@ -14,7 +14,7 @@ function [hrf] = createHRF(opt)
 %                  tau and delta to be manually defined.
 %       tau        Time constant, only used if no type specified
 %       delta      Delay (seconds), only used if no type specified
-%       dt         Time vector step size, seconds
+%       dt         Time vector step size, seconds (default: 2)
 %       n          Phase delay (Default: 3)
 %       maxt       Ending time, seconds (Default: 30)
 %
@@ -22,7 +22,7 @@ function [hrf] = createHRF(opt)
 %   hrf            A structure containing hrf information with fields:
 %       n          Phase delay (opt.n)
 %       dt         Time vector step size, seconds
-%       t          Time vector (0:opt.TR:opt.maxt)
+%       t          Time vector (0:opt.dt:opt.maxt)
 %       tau        Time constant, either a canonical tau for vision or
 %                  audition or manually specified
 %       delta      Delay (seconds), either a canonical tau for vision or
@@ -41,7 +41,7 @@ if ~isfield(opt, 'type')
 end
 
 if ~isfield(opt, 'dt')
-    error('Must specify time vector step size, dt');
+    opt.dt = 2;
 end
 
 if ~isfield(opt, 'n')

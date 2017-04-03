@@ -14,6 +14,8 @@ function [scan] = extractStimImg(scan, scanOpt, nScan, opt)
 %                         'scan' structure, MUST include field:
 %       stimImg           Name of the stimulus image variable within the
 %                         paradigm file(s), string
+%       dt                Time step size, numeric (default:
+%                         scan.dur/size(stimImg,1))
 %   nScan                 Scan number within 'scanOpt'
 %   opt                   A structure containing options for pRF model
 %                         fitting, MUST include field:
@@ -42,10 +44,14 @@ function [scan] = extractStimImg(scan, scanOpt, nScan, opt)
 
 load(scanOpt.paradigmPath{nScan}); % load paradigm file
 stimImg = eval(scanOpt.stimImg{nScan});
+stimSize = size(stimImg);
+
+if ~isfield(scanOpt, 'dt')
+    scan.dt = scan.dur / stimSize(1); % seconds per frame
+end
 
 %% Extract Stimulus Dimensions
 
-stimSize = size(stimImg);
 paramNames = feval(opt.model);
 for i = 1:length(paramNames.funcOf)
     scan.(paramNames.funcOf{i}) = 1:stimSize(i+1);

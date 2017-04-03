@@ -17,6 +17,8 @@ function [scan] = createScan(scanOpt, opt)
 %       stimImg              Name of the stimulus image variable within the
 %                            paradigm file(s), string; optional, specifying
 %                            will use this variable as the stimulus image
+%       dt                   Time step size, numeric (default:
+%                            scan.dur/size(stimImg,1))
 %       voiPath              Path to .voi file, string
 %   opt                      A structure containing option for pRF model
 %                            fitting containing fields:
@@ -113,7 +115,7 @@ end
 
 if isfield(scanOpt, 'stimImg') && length(scanOpt.stimImg) ~= length(scanOpt.vtcPath)
     scanOpt.stimImg = repmat(scanOpt.stimImg,1,length(scanOpt.vtcPath));
-end
+end    
 
 if ~isempty(opt.roi) && isempty(scanOpt.voiPath)
     error('No ''scanOpt.voiPath'' when ''opt.roi'' is specified');

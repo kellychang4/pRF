@@ -10,7 +10,7 @@ function [convStim] = createConvStim(scan, hrf)
 %                   contain fields:
 %       stimImg     The stimulus image as given by
 %                   stimImg = createStimImg(scan, opt)
-%       TR          The scan TR (seconds)
+%       dt          The scan image time steps, numeric (seconds)
 %       nVols       The number of volumes in the scan
 %   hrf             A structure contain all hemodynamic response
 %                   information as given by hrf = createHRF(hrfOpt)
@@ -21,9 +21,17 @@ function [convStim] = createConvStim(scan, hrf)
 
 % Written by Kelly Chang - June 21, 2016
 
+%% Input Control
+
+if isfield(scan, 'dt')
+    hrf = createHRF(assignfield(hrf, 'dt', scan.dt)); 
+else
+    hrf = createHRF(assignfield(hrf, 'dt', scan.TR));
+end
+
 %% Convolve Stimulus Image with HRF
 
-hemo = GammaHRF(hrf, hrf);
+hemo = GammaHRF(hrf,hrf);
 tmp = scan.TR * convn(scan.stimImg, hemo(:));
 convStim = eval(sprintf('tmp(1:size(scan.stimImg,1)%s);', repmat(',:',1,ndims(tmp)-1)));
 convStim = reshape(convStim, size(convStim,1), []);
