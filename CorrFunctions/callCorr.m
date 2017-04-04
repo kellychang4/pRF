@@ -26,7 +26,7 @@ function [coeff] = callCorr(corrName, tc, pred, scan)
 if length(tc) ~= size(pred,1)
     tmp = zeros(scan.nVols, size(pred,2));
     for i = 1:size(pred,2)
-        tmp(:,i) = spline(lengthOut(0, scan.dur/size(pred,1), size(pred,1)), pred(:,i), scan.t);
+        tmp(:,i) = spline(lengthOut(0,scan.dt,size(pred,1)), pred(:,i), scan.t);
     end
     pred = tmp;
 end
