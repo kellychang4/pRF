@@ -24,10 +24,5 @@ function [err] = fitFun(var, funName, params, freeList, origVarargin)
 % store values of 'var' into 'params'
 params = var2params(var, params, freeList);
 
-if ~isempty(origVarargin)
-    tmp = arrayfun(@(x) ['origVarargin{' num2str(x) '}'], 1:length(origVarargin), ...
-        'UniformOutput', false); % organize evaluation string and origVarargin
-    err = eval(sprintf('%s(params,%s);', funName, strjoin(tmp, ','))); % evaluate the function
-else
-    err = eval(sprintf('%s(params);', funName));
-end
+% evaluate the error function
+err = feval(funName, params, origVarargin{:});
