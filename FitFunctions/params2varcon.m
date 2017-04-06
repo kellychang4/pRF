@@ -1,33 +1,38 @@
 function [var,lb,ub,varStr] = params2varcon(params, freeList)
 % [var,lb,ub,varStr] = params2varcon(params, freeList)
 %
-% Support function for 'fitcon.m'. Extracts field values from the 'params'
-% structure into 'var' with corresponding field names into 'varStr'.
-% Extracts lower and upper boundaries of values 'var' from 'freeList' if 
-% specified.
-%
+% Extracts 'freeList' variables from the 'params' structure into 'var' 
+% with corresponding field names only into 'varStr'. Extracts lower 'lb'
+% and upper boundaries 'ub' of values 'var' from 'freeList' if specified.
+% Support function for 'fitcon.m'. 
+% 
 % Inputs:
 %   params      A structure of parameter values with field names that
 %               correspond with the parameter names in 'freeList'
+% 
 %   freeList    Cell array containing list of parameter names (strings) to
 %               be free strings in this cell array can contain  either
 %               varable names, or they can contain inequalities to
 %               restrict variable ranges. For example, the following are
 %               valid.
 %
-%               {'x>0','x<pi','0<x','0>x>10','0<y<1'}
+%               {'x>0','x<pi','0<x','0>x>10','z>exp(1)','0<y<1'}
 %
 % Outputs:
 %   var         Variable value(s) as given in 'params' structure
-%   lb          Lower boundary if given, else -Inf
-%   ub          Upper boundary if given, else Inf
-%   varStr      Variable name(s) as given in 'freeList'
+% 
+%   lb          Lower boundary if given, else -Inf, numeric
+% 
+%   ub          Upper boundary if given, else Inf, numeric
+% 
+%   varStr      Variable name(s) as given in 'freeList' without
+%               inequalities
 
-% Written by G.M. Boynton - September 26, 2014
-% Adapted from 'params2var' by G.M. Boynton - Summer 2000
-% Rewritten by Kelly Chang for pRF package - June 21, 2016
+% Written by G.M. Boynton on 9/26/14
+% Adapted from 'params2var', written Summer of '00
+% Rewritten by Kelly Chang, February 10, 2017
 
-%% Evalulating
+%% Evaluating 
 
 freeList = regexprep(freeList, '[= ]*', ''); % remove spaces and '='
 expr = '(?<l>[^<>]*)(?<s1>(<|>))(?<m>[^<>]*)(?<s2>(<|>))?(?<r>.*)?';
@@ -54,8 +59,16 @@ for i = 1:length(freeList)
             order = {'str2num(token{i}.l)' 'str2num(token{i}.r)' 'token{i}.m'};
         end
     end
-    lb(i) = eval(order{1});
-    ub(i) = eval(order{2});
     varStr{i} = eval(order{3});
-    var(i) = params.(varStr{i});
+    numOrder = cellfun(@(x) regexprep(x,'[()]',''), regexp(varStr{i}, '(\(.*\))', 'match'));
+    if isempty(numOrder)
+        var{i} = params.(regexprep(varStr{i},'(\(.*\))',''));
+    else
+        var{i} = params.(regexprep(varStr{i},'(\(.*\))',''))(str2num(numOrder));
+    end
+    lb{i} = repmat(eval(order{1}),1,length(var{i}));
+    ub{i} = repmat(eval(order{2}),1,length(var{i}));
 end
+lb = cell2mat(lb);
+ub = cell2mat(ub);
+var = cell2mat(var);

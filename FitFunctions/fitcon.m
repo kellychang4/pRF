@@ -3,35 +3,37 @@ function [params,err] = fitcon(funName, params, freeList, varargin)
 %
 % Helpful interface to matlab's 'fmincon' function.
 %
-% INPUTS
-%  'funName': function to be optimized.
-%             Must have form err = <funName>(params, var1, var2, ...)
+% Inputs:
+%   funName        Function to be optimized. Must have form
+%                  [err] = <funName>(params, var1, var2, ...)
 %
-%  params   : structure of parameter values for fitted function
-%             can have field: params.options which sets options for
-%             fminsearch program (see OPTIMSET)
+%   params         A structure of with field names with corresponding
+%                  parameter values for fitted function. 'freeList'
+%                  parameters must only have a singular value per parameter
+%       options    A structure with options for fminsearch program
+%                  (defaults: 'MaxFunEvals', 1e6, 'Display', off;
+%                  see OPTIMSET)
 %
-%  freeList : cell array containing list of parameter names (strings) to be
-%             free strings in this cell array can contain  either varable
-%             names (as in 'fit.m'), or they can contain inequalities to
-%             restrict variable ranges.  For example, the following are
-%             valid.
+%   freeList       Cell array containing list of parameter names (strings)
+%                  to be free in fitting. Free strings can contain either
+%                  variable names (as in 'fit.m'), or can contain
+%                  inequalitites to restrict ranges. For example, the
+%                  following are valid.
 %
-%             {'x>0','x<pi','0<x','0>x>10','z(1:2)>exp(1)','0<y<1'}
+%                  {'x>0','x<pi','0<x','0>x>10','z>exp(1)','0<y<1'}
 %
-%  var<n>   : extra variables to be sent into fitted function
+%   var<n>         Extra variables to be sent into fitted function
 %
-% OUTPUTS
-%  params   : structure for best fitting parameters
-%  err      : error value at minimum
+% Outputs:
+%   params         A structure with best fitting parameters as fieldnames
+%   err            Error value at minimum, numeric
 %
-% Requires the functions:
-%
-% fitminsearchcon, params2varcon, var2params, fitFun
+% Notes:
+% - Dependencies: params2varcon.m, var2params.m, fitFunction.m
 
-% Written by Geoffrey M. Boynton - September 26, 2014
-% Adapted from 'fit.m' written by gmb - Summer 2000
-% Edited by Kelly Chang for pRF package - June 21, 2016
+% Written by Geoffrey M. Boynton, 9/26/14
+% Adapted from 'fit.m' written by gmb in the summer of '00
+% Edited by Kelly Chang, February 10, 2017
 
 %% Input Control
 
@@ -46,21 +48,15 @@ if isempty(freeList)
     freeList = fieldnames(params);
 end
 
-if ischar(freeList) 
-    freeList = {freeList};
-end
-
 %% Turn Initial Free Parameters into vars, lower, and upper bounds
 
-% parse params into variables to use for 'fminsearchcon'
+% turn free parameters in to vars, lower and upper bounds
 [vars,lb,ub,varList] = params2varcon(params, freeList);
 
-% minimizing best params
-vars = fminsearchcon('fitFun', vars, lb, ub, [], [], [], options, ...
-    funName, params, varList, varargin);
+vars = fmincon('fitFunction',vars,[],[],[],[],lb,ub,[],options,funName,params,varList,varargin);
 
-% load final parameters
+% assign final parameters into 'params'
 params = var2params(vars, params, varList);
 
-% estimate err of final parameters
-err = fitFun(vars, funName, params, varList, varargin);
+% evaluate the function 'funName' for error at minimum
+err = fitFunction(vars, funName, params, varList, varargin);
