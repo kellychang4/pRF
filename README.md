@@ -52,6 +52,14 @@ Code for fitting population receptive fields (Dumoulin & Wandell, 2008) for mult
 	* Creates a .olt file based on the number of specified colors
 	* Creatae a .vmp file for the parameters specified, able to adjust for a range of parameter fits
 
+---
+
+# Tutorial
+
+I've written a tutorial that walks through the concepts of pRF modeling in case you're new to the topic.
+
+[pRF Tutorial](http://htmlpreview.github.io/?https://github.com/kellychang4/pRF/blob/master/Tutorial/html/pRFTutorial.html)
+
 --- 
 
 # Latest Version
