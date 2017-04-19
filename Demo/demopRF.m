@@ -9,8 +9,8 @@ subject = 'Demo';
 
 % directories
 % paths = createPaths(); % initialize paths structure
-% paths.data = fullfile(paths.main, 'Ver2.0', 'Demo', 'DemoData'); % path to demostration data directory
-% paths.results = fullfile(paths.main, 'Ver2.0', 'Demo', 'DemoExampleResults'); % path to output results directory
+% paths.data = fullfile(paths.main, 'Demo', 'DemoData'); % path to demostration data directory
+% paths.results = fullfile(paths.main, 'Demo', 'DemoExampleResults'); % path to output results directory
 % paths = createPaths(paths); % create paths if they do not already exist
 
 % model options
