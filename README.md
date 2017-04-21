@@ -58,7 +58,7 @@ Code for fitting population receptive fields (Dumoulin & Wandell, 2008) for mult
 
 I've written a tutorial that walks through the concepts of pRF modeling in case you're new to the topic.
 
-<a href="http://htmlpreview.github.io/?https://github.com/kellychang4/pRF/blob/master/Tutorial/html/pRFTutorial.html" target="_blank">pRF Tutorial</a>
+[pRF Tutorial](http://htmlpreview.github.io/?https://github.com/kellychang4/pRF/blob/master/Tutorial/html/pRFTutorial.html)
 
 --- 
 
