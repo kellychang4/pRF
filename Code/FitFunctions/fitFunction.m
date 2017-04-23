@@ -1,5 +1,5 @@
-function [err] = fitFun(var, funName, params, freeList, origVarargin)
-% [err] = fitFun(var, funName, params, freeList, origVarargin)
+function [err] = fitFunction(var, funName, params, freeList, origVarargin)
+% [err] = fitFunction(var, funName, params, freeList, origVarargin)
 %
 % Support function for 'fitcon.m'
 %
