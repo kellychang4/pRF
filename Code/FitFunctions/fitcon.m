@@ -53,7 +53,8 @@ end
 % turn free parameters in to vars, lower and upper bounds
 [vars,lb,ub,varList] = params2varcon(params, freeList);
 
-vars = fmincon('fitFunction',vars,[],[],[],[],lb,ub,[],options,funName,params,varList,varargin);
+% call non-linear optimization fitting
+vars = fminsearchcon('fitFunction',vars,lb,ub,[],[],[],options,funName,params,varList,varargin);
 
 % assign final parameters into 'params'
 params = var2params(vars, params, varList);

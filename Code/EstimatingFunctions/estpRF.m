@@ -172,7 +172,6 @@ end
 %% Fitting pRF Model (and Estimating HRF)
 
 fprintf('Fitting pRF Model\n');
-save('wip.mat');
 fittedParams = callFitModel(fitParams, opt.freeList, scan, opt);
 
 if ~isnan(opt.estHRF) % if estimating HRF
