@@ -20,7 +20,7 @@ function [err] = fitModel(fitParams, vN, scan, opt)
 %   front of the cross-correlation to make it negative
 
 % Written by Jessica Thomas - October 20, 2014
-% Edited by Kelly Chang for pRF - June 21, 2016
+% Edited by Kelly Chang for pRF package - June 21, 2016
 
 %% Fit pRF Model
 

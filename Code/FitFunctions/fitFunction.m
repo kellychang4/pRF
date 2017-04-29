@@ -1,10 +1,10 @@
-function [err] = fitFunction(var, funName, params, freeList, origVarargin)
+function [err] = fitFunction(vars, funName, params, freeList, origVarargin)
 % [err] = fitFunction(var, funName, params, freeList, origVarargin)
 %
 % Support function for 'fitcon.m'
 %
 % Inputs:
-%   var                  New values to be stored in the 'params' structure
+%   vars                 New values to be stored in the 'params' structure
 %                        under field names (in order) from 'freeList'
 %   funName              Function to be optimized
 %   params               Structure of parameter values for 'funName'
@@ -22,7 +22,7 @@ function [err] = fitFunction(var, funName, params, freeList, origVarargin)
 %% Calling Specified Function to be Fitted
 
 % store values of 'var' into 'params'
-params = var2params(var, params, freeList);
+params = var2params(vars, params, freeList);
 
 % evaluate the error function
-err = feval(funName, params, origVarargin{:});
+err = double(feval(funName, params, origVarargin{:}));

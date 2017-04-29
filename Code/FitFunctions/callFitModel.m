@@ -23,14 +23,14 @@ function [fittedParams] = callFitModel(fitParams, freeList, scan, opt)
 
 nVox = length(scan(1).vtc);
 freeName = regexprep(freeList, '[^A-Za-z]', '');
-parallelOpt.title = sprintf('Estimating: %s', strjoin(freeName, ' & '));
+barName = sprintf('Estimating: %s', strjoin(freeName, ' & '));
 
 %% Fitting Model
 
 fittedParams = fitParams;
 parfor i = 1:nVox
     if ~opt.quiet && opt.parallel
-        parallelProgressBar(nVox, parallelOpt);
+        parallelProgressBar(nVox, barName);
     elseif ~opt.quiet && mod(i,floor(nVox/10)) == 0 % display voxel count every 100 voxels
         fprintf('Fitting pRF: Voxel %d of %d\n', i, nVox);
     end
@@ -43,5 +43,5 @@ parfor i = 1:nVox
     end
 end
 if ~opt.quiet && opt.parallel % clean up parallel progress bar
-    parallelProgressBar(-1, parallelOpt);
+    parallelProgressBar(-1, barName);
 end

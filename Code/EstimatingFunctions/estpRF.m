@@ -1,7 +1,7 @@
 function [collated] = estpRF(scan, seeds, hrf, opt)
 % [collated] = estpRF(scan, seeds, hrf, opt)
 %
-% Estimates the pRF model 
+% Estimates the pRF model
 %
 % Inputs:
 %   scan                    A structure containing information about the
@@ -90,14 +90,17 @@ if ~isempty(fieldnames(opt.cost)) && ~all(ismember(setdiff(fieldnames(opt.cost),
         strjoin(errFlds, ', '))
 end
 
+% if estimated hrf but pre-defined hrf provided
+if ~isnan(opt.estHRF) && isfield(hrf, 'hrf')
+    error('Cannot estimate HRF with pre-defined (non-paramaterized) HRF');
+end
+
 %% Initialize pRF Fields
 
 for i = 1:nVox
     pRF(i).id = scan(1).vtc(i).id; % voxel 'id' number
     pRF(i).didFit = false;
     pRF(i).corr = NaN;
-    pRF(i).tau = NaN;
-    pRF(i).delta = NaN;
     pRF(i).bestSeed = NaN;
     for i2 = 1:length(freeName)
         pRF(i).(freeName{i2}) = NaN;
@@ -127,7 +130,7 @@ end
 fprintf('Calculating Best Seeds\n');
 parfor i = 1:nVox
     if ~opt.quiet && opt.parallel
-        parallelProgressBar(nVox,  struct('title', 'Calculating Best Seed'));
+        parallelProgressBar(nVox, 'Calculating Best Seed');
     elseif ~opt.quiet && mod(i,floor(nVox/10)) == 0 % display voxel count every 100 voxels
         fprintf('Calculating Best Seed: Voxel %d of %d\n', i, nVox);
     end
@@ -149,7 +152,7 @@ parfor i = 1:nVox
         ['seedID' freeName 'corr']);
 end
 if ~opt.quiet && opt.parallel % clean up parallel progress bar
-    parallelProgressBar(-1, struct('title', 'Calculating Best Seed'));
+    parallelProgressBar(-1, 'Calculating Best Seed');
 end
 
 %% Prepare 'fitParams' Structure for pRF Fitting
@@ -169,18 +172,19 @@ end
 %% Fitting pRF Model (and Estimating HRF)
 
 fprintf('Fitting pRF Model\n');
+save('wip.mat');
 fittedParams = callFitModel(fitParams, opt.freeList, scan, opt);
 
 if ~isnan(opt.estHRF) % if estimating HRF
     fprintf('Estimating HRF\n');
     fittedParams = callFitHRF(fittedParams, scan, opt);
-    hrf.fit.tau = median([fittedParams.tau]);
-    hrf.fit.delta = median([fittedParams.delta]);
+    hrf.fit.tau = median([fittedParams.tau], 'omitnan');
+    hrf.fit.delta = median([fittedParams.delta], 'omitnan');
     fitParams = assignfield(fitParams, 'tau', hrf.fit.tau, 'delta', hrf.fit.delta);
     fprintf('Fitting pRF Model with Estimated HRF\n');
     fittedParams = callFitModel(fitParams, opt.freeList, scan, opt);
     for i = 1:length(scan) % update convolved stimulus
-        scan(i).convStim = createConvStim(scan(i), fittedParams);
+        scan(i).convStim = createConvStim(scan(i), fittedParams(1));
     end
 end
 opt.stopTime = datestr(now);
@@ -190,8 +194,6 @@ opt.stopTime = datestr(now);
 for i = 1:nVox
     pRF(i).didFit = fittedParams(i).didFit;
     pRF(i).corr = fittedParams(i).corr;
-    pRF(i).tau = fittedParams(i).tau;
-    pRF(i).delta = fittedParams(i).delta;
     for i2 = 1:length(freeName)
         pRF(i).(freeName{i2}) = fittedParams(i).(freeName{i2});
     end
@@ -199,7 +201,7 @@ end
 
 %% Organize Output
 
-pRF = orderfields(pRF, ['id' 'didFit' freeName 'corr' 'tau' 'delta' 'bestSeed']);
+pRF = orderfields(pRF, ['id' 'didFit' freeName 'corr' 'bestSeed']);
 collated = collate(scan, seeds, hrf, pRF, opt);
 
 %% Final Timings

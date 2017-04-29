@@ -23,15 +23,20 @@ function [convStim] = createConvStim(scan, hrf)
 
 %% Input Control
 
-if isfield(scan, 'dt')
-    hrf = createHRF(assignfield(hrf, 'dt', scan.dt)); 
-else
+if isfield(hrf, 'hrf') && isfield(scan, 'dt') % pre-defined hrf + dt
+    hemo = spline(hrf.t, hrf.hrf, min(hrf.t):scan.dt:max(hrf.t));
+elseif isfield(hrf, 'hrf') && ~isfield(scan, 'dt') % pre-defined hrf + TR
+    hemo = spline(hrf.t, hrf.hrf, min(hrf.t):scan.TR:max(hrf.t));
+elseif ~isfield(hrf, 'hrf') && isfield(scan, 'dt') % params + dt 
+    hrf = createHRF(assignfield(hrf, 'dt', scan.dt));
+    hemo = GammaHRF(hrf,hrf);
+elseif ~isfield(hrf, 'hrf') &&  ~isfield(scan, 'dt') % params + TR
     hrf = createHRF(assignfield(hrf, 'dt', scan.TR));
+    hemo = GammaHRF(hrf,hrf);
 end
 
 %% Convolve Stimulus Image with HRF
 
-hemo = GammaHRF(hrf,hrf);
 tmp = scan.TR * convn(scan.stimImg, hemo(:));
 convStim = eval(sprintf('tmp(1:size(scan.stimImg,1)%s);', repmat(',:',1,ndims(tmp)-1)));
 convStim = reshape(convStim, size(convStim,1), []);

@@ -28,7 +28,7 @@ fitParams = fitParams(indx);
 for i = 1:length(scan)
     scan(i).vtc = scan(i).vtc(indx);
 end
-parallelTitle = 'Estimating HRF (%d): tau & delta';
+barName = 'Estimating HRF (%d): tau & delta';
 
 %% Fitting HRF
 
@@ -37,7 +37,7 @@ for i = 1:opt.estHRF
     fprintf('HRF Fitting Iteration %d of %d\n',  i, opt.estHRF);
     parfor nV = 1:sum(indx) % for each voxel
         if ~opt.quiet && opt.parallel
-            parallelProgressBar(sum(indx), struct('title', sprintf(parallelTitle,i)));
+            parallelProgressBar(sum(indx), sprintf(barName,i));
         elseif ~opt.quiet && mod(nV,floor(sum(indx)/10)) == 0 % display voxel count every 100 voxels
             fprintf('Fitting HRF: Voxel %d of %d\n', nV, sum(indx));
         end
@@ -45,10 +45,10 @@ for i = 1:opt.estHRF
             {'tau','delta'}, nV, scan, opt);
     end
     if ~opt.quiet && opt.parallel % clean up parallel progress bar
-        parallelProgressBar(-1, struct('title', sprintf(parallelTitle,i)));
+        parallelProgressBar(-1, sprintf(barName,i));
     end
-    fitTau = median([fittedParams.tau]);
-    fitDelta = median([fittedParams.delta]);
+    fitTau = median([fittedParams.tau], 'omitnan');
+    fitDelta = median([fittedParams.delta], 'omitnan');
     fittedParams = assignfield(fittedParams, 'tau', fitTau, 'delta', fitDelta);
     if i ~= opt.estHRF % not the last hrf fitting iteration
         fittedParams = callFitModel(fittedParams, opt.freeList, scan, opt);

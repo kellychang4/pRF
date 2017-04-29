@@ -1,5 +1,5 @@
-function parallelProgressBar(n, opt)
-% parallelProgressBar(n, opt)
+function parallelProgressBar(n, name, width, bit)
+% parallelProgressBar(n, name, width, bit)
 %
 % Draws an ASCII progress bar. Designed to be implemented during parallel
 % processing jobs (parfor) by saving a temporary binary file
@@ -9,13 +9,11 @@ function parallelProgressBar(n, opt)
 %   n               The total number of iterations perform by parfor.
 %                   Negative values deletes 'parallelProgressBar.bin' and
 %                   displays a completed progress bar.
-%   opt             A structure containing fields that specify additional
-%                   options:
-%       title       Title of progress bar, string (default: 'Progress')
-%       bit         The class specification of integers saved in the
+%   name           	Name of progress bar, string (default: 'Progress')
+%   width           The character width of the progress bar (default: 50)
+%   bit             The class specification of integers saved in the
 %                   temporary 'parallelProgressBar.bin' binary file, string
 %                   (default: 'uint32')
-%       width       The character width of the progress bar (default: 50)
 %
 % Example:
 % n = 100;
@@ -30,20 +28,16 @@ function parallelProgressBar(n, opt)
 
 %% Input Control
 
-if ~exist('opt', 'var')
-    opt = struct();
+if ~exist('name', 'var')
+    name = 'Progress:';
 end
 
-if ~isfield(opt, 'title')
-    opt.title = 'Progress:';
+if ~exist('bit', 'var')
+    bit = 'uint32';
 end
 
-if ~isfield(opt, 'bit')
-    opt.bit = 'uint32';
-end
-
-if ~isfield(opt, 'width')
-    opt.width = 50;
+if ~exist('width', 'var')
+    width = 50;
 end
 
 %% Parallel Progresss Counter
@@ -53,27 +47,25 @@ fileName = fullfile(tempdir, 'parallelProgressBar.bin');
 if n < 0
     delete(fileName);
     disp(repmat(char(10),1,10));
-    disp(['  ' opt.title]);
-    disp(['   [' repmat('-',1,opt.width) '] 100.00%']);
+    fprintf('  %s\n   [%s] 100.00%%\n', name, repmat('-',1,width));
 else
     if ~exist(fileName, 'file')
         fid = fopen(fileName, 'w');
-        fwrite(fid, 0, opt.bit);
+        fwrite(fid, 0, bit);
         fclose(fid);
     end
     
     fid = fopen(fileName, 'r');
-    count = fread(fid, Inf, opt.bit);
+    count = fread(fid, Inf, bit);
     fclose(fid);
     
     fid = fopen(fileName, 'a');
-    fwrite(fid, length(count), opt.bit);
+    fwrite(fid, length(count), bit);
     fclose(fid);
     
     p = length(count)/n;
-    barLen = round(opt.width*p);
+    barLen = round(width*p);
     disp(repmat(char(10),1,10));
-    disp(['  ' opt.title]);
-    disp(['   [' repmat('-',1,barLen) repmat(' ',1,opt.width-barLen) '] ' ...
-        sprintf('%5.2f%%', p*100)]);
+    fprintf('  %s\n   [%s%s] %5.2f%%\n', name, repmat('-',1,barLen), ...
+        repmat(' ',1,width-barLen), p*100);
 end

@@ -2,24 +2,39 @@ function [scan] = createScan(scanOpt, opt)
 % [scan] = createScan(scanOpt, opt)
 %
 % Creates a structure 'scan' containing information about the scan(s) given
-% by the corresponding 'scanOpt.vtcPath' and 'scanOpt.paradigmPath'
+% by the corresponding 'scanOpt.vtcPath' and 'scanOpt.paradigmPath' through
+% one of two methods
+%
+% METHOD 1: PARADIGM
+% Will create a 'scan' structure based off the given
+% 'scanOpt.paradigm.<funcOf>' sequence(s), will create a stimulus image
+% from the given paradigm sequence(s)
+% 
+% METHOD 2: STIMULUS IMAGE
+% Will create a 'scan' structre based off pre-defined stimulus image(s)
 %
 % Inputs:
 %   scanOpt                  A structure containing option to create the
 %                            'scan' structure with fields:
 %       vtcPath              Path(s) to all .vtc files, string
 %       paradigmPath         Path(s) to all .mat paradigm files, string
+%       voiPath              Path to .voi file, string
+% 
+% METHOD 1: PARADIGM
 %       paradigm             A structure containing variable name(s) of the
 %                            paradigm sequence(s) located within the
-%                            paradigm files (i.e., scanOpt.paradigm.<var>);
-%                            optional, specifying will create the stimulus
-%                            image
+%                            paradigm files; optional, specifying will
+%                            let the code create the stimulus image 
+%            <funcOf         Stimulus paradigm sequence of the field
+%             parameters>    specified funcOf parameter name
+%
+% METHOD 2: STIMULUS IMAGE
 %       stimImg              Name of the stimulus image variable within the
 %                            paradigm file(s), string; optional, specifying
 %                            will use this variable as the stimulus image
 %       dt                   Time step size, numeric (default:
 %                            scan.dur/size(stimImg,1))
-%       voiPath              Path to .voi file, string
+%
 %   opt                      A structure containing option for pRF model
 %                            fitting containing fields:
 %       model                Model name, also the function name to be
