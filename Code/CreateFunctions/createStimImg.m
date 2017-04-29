@@ -65,7 +65,7 @@ end
 
 %% Calculate Stimulus Image / Paradigm Time Sampling Rate (dt)
 
-if scan.TR ~= scan.dur/length(scan.paradigm.(paramNames.funcOf{1}))
+if scan.nVols ~= length(scan.paradigm.(paramNames.funcOf{1}))
     scan.dt = scan.dur/length(scan.paradigm.(paramNames.funcOf{1}));
 end
 
