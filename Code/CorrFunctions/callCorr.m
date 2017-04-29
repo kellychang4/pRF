@@ -24,11 +24,12 @@ function [coeff] = callCorr(corrName, tc, pred, scan)
 %% Down Sample if Needed
 
 if length(tc) ~= size(pred,1)
-    tmp = zeros(scan.nVols, size(pred,2));
-    for i = 1:size(pred,2)
-        tmp(:,i) = spline(lengthOut(0,scan.dt,size(pred,1)), pred(:,i), scan.t);
-    end
-    pred = tmp;
+    nanIndx = any(isnan(pred),1);
+    tmp = cell(1,size(pred,2));
+    tmp(nanIndx) = {NaN(size(tc))};
+    tmp(~nanIndx) = cellfun(@(x) spline(lengthOut(0,scan.dt,length(x)),x,scan.t)', ...
+        num2cell(pred(:,~nanIndx),1), 'UniformOutput', false);
+    pred = cell2mat(tmp);
 end
 
 %% Call Correlation

@@ -55,12 +55,18 @@ if length(paramNames.funcOf) > 1 && range(structfun(@length, scan.paradigm)) ~= 
     error('Paradigm sequences are not equivalent in length');
 end
 
-%% Interpolate Up Sampled Resolution of Image
+%% Interpolate Up Sampled Resolution of funcOf Variables
 
 for i = 1:length(paramNames.funcOf)
     scan.(paramNames.funcOf{i}) = interp1(1:opt.upSample:length(scan.k.(paramNames.funcOf{i}))*opt.upSample, ...
         scan.k.(paramNames.funcOf{i}), 1:(length(scan.k.(paramNames.funcOf{i}))*opt.upSample));
     scan.(paramNames.funcOf{i}) = scan.(paramNames.funcOf{i})(1:end-(opt.upSample-1));
+end
+
+%% Calculate Stimulus Image / Paradigm Time Sampling Rate (dt)
+
+if scan.TR ~= scan.dur/length(scan.paradigm.(paramNames.funcOf{1}))
+    scan.dt = scan.dur/length(scan.paradigm.(paramNames.funcOf{1}));
 end
 
 %% Create Stimulus Image

@@ -131,7 +131,7 @@ fprintf('Calculating Best Seeds\n');
 parfor i = 1:nVox
     if ~opt.quiet && opt.parallel
         parallelProgressBar(nVox, 'Calculating Best Seed');
-    elseif ~opt.quiet && mod(i,floor(nVox/10)) == 0 % display voxel count every 100 voxels
+    elseif ~opt.quiet && mod(i,floor(nVox/10)) == 0 % display voxel count every 10th of voxels
         fprintf('Calculating Best Seed: Voxel %d of %d\n', i, nVox);
     end
     
