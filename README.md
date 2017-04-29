@@ -63,10 +63,14 @@ I've written a tutorial that walks through the concepts of pRF modeling in case 
 --- 
 
 # Latest Version
+[Version Log](https://github.com/kellychang4/pRF/blob/master/VersionLog.txt)
 
-### Version 2.0
-- m-D pRF modeling: can fit 1D pRF model (i.e., Tonotopy), or 2D pRF models (i.e., Retinotopy), up to m-D pRF models
-- Iterative HRF fitting: takes a subset of voxels past settable threshold after initial pRF parameter fitting, holds those constant, fits tau + delta HRF parameters, take median tau + delta, hold those constant, and re-fit pRF parameter(s) on subset of voxels for specified iterations
+### Version 2.1
+- Added stimulus image capabilities, can now supply a "movie" of stimulus in time
+- Added HRF options, can now provide a previously estimated HRF, non-parameterized, to be used in pRF convolution instead of parameterized version
+- Added general pRF / fMRI walk-through in 'Tutorial' folder
+- Reorganized pRF package structure
+- Edited misc. functions for use outside of pRF package (i.e., removing some forced structure arguments)
 
 --- 
 

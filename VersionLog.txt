@@ -25,11 +25,17 @@
 - Added more misc. functions
 
 ### Version 2.1
+- Added stimulus image capabilities, can now supply a "movie" of stimulus in time
+- Added HRF options, can now provide a previously estimated HRF, non-parameterized, to be used in pRF convolution instead of parameterized version
+- Added general pRF / fMRI walk-through in 'Tutorial' folder
+- Reorganized pRF package structure
+- Edited misc. functions for use outside of pRF package (i.e., removing some forced structure arguments)
+
+### Version 2.2
 - ~~~~!!!!!~~~~ WIP WIP WIP WIP WIP ~~~~!!!!!~~~~
 - Added Tutorial Folder with first tutorial: Basics of pRF modeling and decoding a stimulus sequence
 - should include without BV compatibility (maybe for another version...) for other programs
 - createScan is too BV optimized, if some fields fail it should not be a catastrophic failure
 - doesn't mean i shouldn't include more functionality for BV...
 - paradigm input should be variable such as from a .txt file
-- WORKING IN TIME AND NOT TRS!!!!!
 - should start writing a documentation manual about all the options @.@
