@@ -20,7 +20,7 @@ function [opt] = plotParams(collated, opt)
 %                   the figure divided into (default: maximum 4 graphs per
 %                   row)
 %       measure     A function used to specify where to draw a vertical
-%                   line on the plot (i.e., @median) (default: [])
+%                   line on the plot (default: @median)
 %       bins        Number of bins used in the histogram, numeric
 %                   (default: 25)
 %
@@ -62,7 +62,7 @@ for i = 1:length(opt)
     end
     
     if ~isfield(opt(i), 'measure') || isempty(opt(i).measure)
-        opt(i).measure = [];
+        opt(i).measure = @median;
     end
     
     if ~isfield(opt(i), 'subplot') || isempty(opt(i).subplot)
