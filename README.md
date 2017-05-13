@@ -24,13 +24,13 @@ Code for fitting population receptive fields (Dumoulin & Wandell, 2008) for mult
 	
 	```matlab
 	% paths = createPaths(); % initialize paths structure
-	% paths.data = fullfile(paths.main, 'Demo', 'DemoData'); % path to demostration data directory
-	% paths.results = fullfile(paths.main, 'Demo', 'DemoExampleResults'); % path to output results directory
+	% paths.data = fullfile(paths.main, 'DemoData'); % path to demostration data directory
+	% paths.results = fullfile(paths.main, 'DemoExampleResults'); % path to output results directory
 	% paths = createPaths(paths); % create paths if they do not already exist
 	```
 
 4. Run demopRF.m
-	* Estimates pRF parameters, mu & sigma & exp, along with HRF parameters, tau & delta, for the demonstration data
+	* Estimates pRF parameters, mu & sigma & exp, along with Boynton HRF parameters, tau & delta, for the demonstration data
 	* Plots histogram of estimated pRF parameters mu, sigma, exp, and corr
 	* Plots pRF model predicted voxel time courses vs. actual voxel time courses  
 
