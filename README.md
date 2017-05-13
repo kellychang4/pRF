@@ -33,6 +33,7 @@ Code for fitting population receptive fields (Dumoulin & Wandell, 2008) for mult
 	* Estimates pRF parameters, mu & sigma & exp, along with Boynton HRF parameters, tau & delta, for the demonstration data
 	* Plots histogram of estimated pRF parameters mu, sigma, exp, and corr
 	* Plots pRF model predicted voxel time courses vs. actual voxel time courses  
+	* Plots estimated Boynton HRF as a function of time
 
 #### Continue for BrainVoyager Only visualization demo scripts
 
