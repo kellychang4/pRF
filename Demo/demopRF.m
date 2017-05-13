@@ -9,8 +9,8 @@ subject = 'Demo';
 
 % directories
 % paths = createPaths(); % initialize paths structure
-% paths.data = fullfile(paths.main, 'Demo', 'DemoData'); % path to demostration data directory
-% paths.results = fullfile(paths.main, 'Demo', 'DemoExampleResults'); % path to output results directory
+% paths.data = fullfile(paths.main, 'DemoData'); % path to demostration data directory
+% paths.results = fullfile(paths.main, 'DemoExampleResults'); % path to output results directory
 % paths = createPaths(paths); % create paths if they do not already exist
 
 % model options
@@ -51,11 +51,11 @@ seedOpt.exp = 0.5; % fixed parameter
 
 seeds = createSeeds(seedOpt); % creating 'seeds' structure
 
-% hdr options
+% hrf options
 hrfOpt.type = 'audition';
 hrfOpt.dt = scan(1).TR;
 
-hrf = createHRF(hrfOpt); % creating 'hdr' structure
+hrf = createHRF(hrfOpt); % creating 'hrf' structure
 
 %% Estimate and Save pRF
 
@@ -76,3 +76,6 @@ plotParams(collated, paramOpt);
 
 % predicted time course
 plotPredicted(collated);
+
+% fitted hrf
+plotHRF(collated);
