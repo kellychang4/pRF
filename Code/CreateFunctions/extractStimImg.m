@@ -48,6 +48,8 @@ stimSize = size(stimImg);
 
 if ~isfield(scanOpt, 'dt')
     scan.dt = scan.dur / stimSize(1); % seconds per frame
+else 
+    scan.dt = scanOpt.dt;
 end
 
 %% Extract Stimulus Dimensions

@@ -91,9 +91,9 @@ if ~isfield(scanOpt, 'voiPath')
     scanOpt.voiPath = '';
 end
 
-if isempty(scanOpt.vtcPath)
+if ~isfield(scanOpt, 'vtcPath') || isempty(scanOpt.vtcPath)
     error('No .vtc files selected');
-elseif isempty(scanOpt.paradigmPath)
+elseif ~isfield(scanOpt, 'paradigmPath') && isempty(scanOpt.paradigmPath)
     error('No paradigm files selected');
 end
 
