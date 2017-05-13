@@ -1,5 +1,5 @@
 function [predicted] = plotPredicted(collated, nVox, nScan)
-% [predicted] = plotPredicted(collated, opt)
+% [predicted] = plotPredicted(collated, nVox, nScan)
 %
 % Plot 2 figures with the PREDICTED (dashed red) vs. ACTUAL (grey) time
 % course:
