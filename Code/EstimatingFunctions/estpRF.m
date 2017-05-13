@@ -177,9 +177,12 @@ fittedParams = callFitModel(fitParams, opt.freeList, scan, opt);
 if ~isnan(opt.estHRF) % if estimating HRF
     fprintf('Estimating HRF\n');
     fittedParams = callFitHRF(fittedParams, scan, hrf, opt);
-    hrf.fit.tau = median([fittedParams.tau], 'omitnan');
-    hrf.fit.delta = median([fittedParams.delta], 'omitnan');
-    fitParams = assignfield(fitParams, 'tau', hrf.fit.tau, 'delta', hrf.fit.delta);
+    for i = 1:length(hrf.freeList)
+        hrf.fit.(hrf.freeList{i}) = median([fittedParams.(hrf.freeList{i})], 'omitnan');
+    end
+    fitParams = eval(sprintf('assignfield(fittedParams,%s);', ...
+        strjoin(cellfun(@(x) sprintf('''%1$s'',hrf.fit.%1$s',x), ...
+        hrf.freeList, 'UniformOutput', false),',')));
     fprintf('Fitting pRF Model with Estimated HRF\n');
     fittedParams = callFitModel(fitParams, opt.freeList, scan, opt);
     for i = 1:length(scan) % update convolved stimulus

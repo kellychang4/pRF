@@ -47,9 +47,12 @@ for i = 1:opt.estHRF
     if ~opt.quiet && opt.parallel % clean up parallel progress bar
         parallelProgressBar(-1, sprintf(barName,i));
     end
-    fitTau = median([fittedParams.tau], 'omitnan');
-    fitDelta = median([fittedParams.delta], 'omitnan');
-    fittedParams = assignfield(fittedParams, 'tau', fitTau, 'delta', fitDelta);
+    for i2 = 1:length(fitParams.freeList)
+        f.(fitParams.freeList{i2}) = median([fittedParams.(fitParams.freeList{i2})], 'omitnan');
+    end
+    fittedParams = eval(sprintf('assignfield(fittedParams,%s);', ...
+        strjoin(cellfun(@(x) sprintf('''%1$s'',f.%1$s',x), ...
+        fitParams.freeList, 'UniformOutput', false),',')));
     if i ~= opt.estHRF % not the last hrf fitting iteration
         fittedParams = callFitModel(fittedParams, opt.freeList, scan, opt);
     end
