@@ -29,10 +29,10 @@ elseif isfield(hrf, 'hrf') && ~isfield(scan, 'dt') % pre-defined hrf + TR
     hemo = spline(hrf.t, hrf.hrf, min(hrf.t):scan.TR:max(hrf.t));
 elseif ~isfield(hrf, 'hrf') && isfield(scan, 'dt') % params + dt 
     hrf = createHRF(assignfield(hrf, 'dt', scan.dt));
-    hemo = GammaHRF(hrf,hrf);
+    hemo = feval(hrf.func, hrf, hrf);
 elseif ~isfield(hrf, 'hrf') &&  ~isfield(scan, 'dt') % params + TR
     hrf = createHRF(assignfield(hrf, 'dt', scan.TR));
-    hemo = GammaHRF(hrf,hrf);
+    hemo = feval(hrf.func, hrf, hrf);
 end
 
 %% Convolve Stimulus Image with HRF

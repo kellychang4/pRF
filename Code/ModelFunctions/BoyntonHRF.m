@@ -1,7 +1,7 @@
-function [out] = GammaHRF(params, funcOf)
-% [out] = GammaHRF(params, funcOf)
+function [out] = BoyntonHRF(params, funcOf)
+% [out] = BoyntonHRF(params, funcOf)
 %
-% Returns a Gamma function on vector funcOf.t based on the equation:
+% Returns a Gamma function on vector 'funcOf.t' based on the equation:
 %
 % g(x) = ((t-delta)/tau).^(n-1).*exp(-(t-delta)/tau)/(tau*factorial(n-1))
 %

@@ -17,12 +17,14 @@ function [hemo] = plotHRF(collated)
 %% Extract Hemodynamic Response
 
 t = collated.hrf.t;
-if isfield(collated.hrf, 'fit') 
+if isfield(collated.hrf,'func') && isfield(collated.hrf, 'fit') % parameterized + fitted
     params = collated.hrf.fit;
-    hemo = GammaHRF(params, collated.hrf);
-else % hrf was not fit
+    hemo = feval(collated.hrf.func, params, collated.hrf);
+end
+
+if isfield(collated.hrf,'func') && ~isfield(collated.hrf,'fit') % parameterized + not fitted
     params = collated.hrf;
-    hemo = GammaHRF(params, collated.hrf);
+    hemo = feval(collated.hrf.func, params, collated.hrf);
 end
 
 if isfield (collated.hrf, 'hrf') % pre-defined hrf
