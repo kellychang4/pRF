@@ -1,5 +1,5 @@
-function [saveName] = voi2mat(voiPath, vtcPath)
-% [saveName] = voi2mat(voiPath, vtcPath)
+function [roi] = voi2mat(voiPath, vtcPath)
+% [roi] = voi2mat(voiPath, vtcPath)
 %
 % Converts BrainVoyager QX .voi ROI linear indices into a .mat file. The
 % linear indices are in reference to the given BrainVoyager .vtc file. The
@@ -10,7 +10,7 @@ function [saveName] = voi2mat(voiPath, vtcPath)
 %   vtcPath              Path to reference .vtc file, string
 % 
 % Output:
-%   saveName             Name of the .mat file saved as, string
+%   roi                  Structure containing the roi indices
 %
 % Notes:
 % - Dependencies: <a href="matlab: web('http://support.brainvoyager.com/available-tools/52-matlab-tools-bvxqtools/232-getting-started.html')">BVQXTools/NeuroElf</a>
