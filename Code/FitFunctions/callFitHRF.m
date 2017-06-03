@@ -42,7 +42,7 @@ for i = 1:opt.estHRF
             fprintf('Fitting HRF: Voxel %d of %d\n', nV, sum(indx));
         end
         fittedParams(nV) = fitcon('fitModel', fittedParams(nV), ...
-            fitParams.freeList, nV, scan, opt);
+            fitParams(1).freeList, nV, scan, opt);
     end
     if ~opt.quiet && opt.parallel % clean up parallel progress bar
         parallelProgressBar(-1, sprintf(barName,i));
