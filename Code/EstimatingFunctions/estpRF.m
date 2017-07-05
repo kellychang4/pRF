@@ -176,7 +176,7 @@ fittedParams = callFitModel(fitParams, opt.freeList, scan, opt);
 
 if ~isnan(opt.estHRF) % if estimating HRF
     fprintf('Estimating HRF\n');
-    fittedParams = callFitHRF(fittedParams, scan, hrf, opt);
+    fittedParams = callFitHRF(fittedParams, scan, opt);
     for i = 1:length(hrf.freeList)
         hrf.fit.(hrf.freeList{i}) = median([fittedParams.(hrf.freeList{i})], 'omitnan');
     end

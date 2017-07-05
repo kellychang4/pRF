@@ -1,4 +1,4 @@
-function [out] = BoyntonHRF(params, funcOf)
+function [hrf] = BoyntonHRF(params, funcOf)
 % [out] = BoyntonHRF(params, funcOf)
 %
 % Returns a Gamma function on vector 'funcOf.t' based on the equation:
@@ -19,8 +19,8 @@ function [out] = BoyntonHRF(params, funcOf)
 %                 a function of:
 %       t         Time vector the gamma function is a function of, g(x)
 %
-% Outputs:
-%   out           Output of the Gamma function from the given parameters
+% Output:
+%   hrf           Output of the Gamma function from the given parameters
 %                 given as a column
 
 % Written by G.M. Boynton at Stanford University - June 27, 1995
@@ -30,11 +30,11 @@ function [out] = BoyntonHRF(params, funcOf)
 %% Equation
 
 if nargin < 1
-    out.params = {'n', 'tau', 'delta'};
-    out.funcOf = {'t'};
+    hrf.params = {'n', 'tau', 'delta'};
+    hrf.funcOf = {'t'};
 else
     t = funcOf.t - params.delta;
-    out = (t/params.tau).^(params.n-1) .* ...
+    hrf = (t/params.tau).^(params.n-1) .* ...
         exp(-t/params.tau)/(params.tau*factorial(params.n-1));
-    out(t < 0) = 0;
+    hrf(t < 0) = 0;
 end
