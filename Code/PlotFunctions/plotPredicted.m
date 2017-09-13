@@ -70,8 +70,8 @@ subplot(2,1,2); hold on;
 plot(collated.scan(nScan).t, zscore(predicted(nScan).tc(:,nVox)), 'Color', [0.75 0.75 0.75]);
 plot(tPred, zscore(predicted(nScan).pred(:,nVox)), 'r--');
 if isfield(collated.scan(1), 'paradigm') % calculate breaks, paradigm method
-    tmp = struct2cell(collated.scan(nScan).paradigm);
-    breaks = asrow(find(any(isnan(cell2mat(asrow(tmp))),2)) * collated.scan(nScan).dt);
+    tmp = struct2cell(structfun(@ascol, collated.scan(nScan).paradigm, 'UniformOutput', false))';
+    breaks = asrow(find(any(isnan(cell2mat(tmp)),2)) * collated.scan(nScan).dt);
 else % stimImg method 
     tmp = reshape(collated.scan(nScan).stimImg, size(collated.scan(nScan).stimImg,1), []);
     breaks = asrow(find(~any(tmp,2)) * collated.scan(nScan).dt);

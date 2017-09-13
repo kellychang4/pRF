@@ -33,8 +33,9 @@ function [scan] = createBVScan(boldPath, roiPath)
 
 bold = BVQXfile(boldPath); % load .vtc file
 if ~all(cellfun(@isempty, roiPath))
+    vtc = []; % initialize vtc
     for i = 1:length(roiPath)
-        vtc(i) = VTCinVOI(bold, BVQXfile(roiPath{i}));
+        vtc = [vtc VTCinVOI(bold, BVQXfile(roiPath{i}))];
     end
 else
     vtc = fullVTC(bold);
