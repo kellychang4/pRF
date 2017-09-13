@@ -19,7 +19,7 @@ Code for fitting population receptive fields (Dumoulin & Wandell, 2008) for mult
 	```
 
 3. Edit Pathing to Directories
-	* Uncomment directories section and edit as based on your computer's pathing
+	* Edit directories section as based on your computer's pathing
 	<br>
 	
 	```matlab
@@ -35,24 +35,6 @@ Code for fitting population receptive fields (Dumoulin & Wandell, 2008) for mult
 	* Plots pRF model predicted voxel time courses vs. actual voxel time courses  
 	* Plots estimated Boynton HRF as a function of time
 
-#### Continue for BrainVoyager Only visualization demo scripts
-
-5. Open demoBVFiles.m
-
-	```matlab
-	open demoBVFiles
-	```
-
-6. Edit pathing to main directory
-
-	```matlab
-	paths.main = ''; % input main working directory
-	```
-
-7. Run demoBVFiles.m
-	* Creates a .olt file based on the number of specified colors
-	* Creatae a .vmp file for the parameters specified, able to adjust for a range of parameter fits
-
 ---
 
 # Tutorial
@@ -64,14 +46,17 @@ I've written a tutorial that walks through the concepts of pRF modeling in case 
 --- 
 
 # Latest Version
-[Version Log](https://github.com/kellychang4/pRF/blob/master/VersionLog.txt)
 
-### Version 2.1
-- Added stimulus image capabilities, can now supply a "movie" of stimulus in time
-- Added HRF options, can now provide a previously estimated HRF, non-parameterized, to be used in pRF convolution instead of parameterized version
-- Added general pRF / fMRI walk-through in 'Tutorial' folder
-- Reorganized pRF package structure
-- Edited misc. functions for use outside of pRF package (i.e., removing some forced structure arguments)
+### Version 3.0
+- createScan.m can now also take in FreeSurfer .nii, .nii.gz, .mgz files along with .label files (to select ROIs)
+- Edited HRF options, can now provide other parameterized HRF function other than the BoyntonHRF such as the TwoGammaHRF from SPM
+- Edited HRF estimating methods, can now iteratively fit HRF parameters either voxels that past a correlation threshold and/or are in the top percentage of initial correlation fits
+- Incorporated timing interpolation if stimulus image and voxel time courses were collected at different sampling rates
+- Add plotHRF.m to visualize the HRF used to fit the pRF model
+- Optimizing for redundant code calls and efficiency. Also reduced nested structure layers
+- General documentation editing for spelling errors and clarity
+
+[Version Log](https://github.com/kellychang4/pRF/blob/master/VersionLog.txt)
 
 --- 
 
@@ -84,7 +69,7 @@ Kelly Chang - @kellychang4 - kchang4@uw.edu
 # Dependencies
 
 [BVQXtools/NeuroElf](http://support.brainvoyager.com/available-tools/52-matlab-tools-bvxqtools/232-getting-started.html)
-
+[mrVista/FreeSurfer](https://github.com/vistalab/vistasoft/tree/master/external/freesurfer)
 --- 
 
 # References
