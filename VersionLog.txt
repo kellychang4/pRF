@@ -1,6 +1,6 @@
 ### Version 1.0
 - Estimates individual HRF parameters, tau & delta
-- Fits 1D Gaussian pRF model with parameters, mu & sigma; includes a compressive spatal summation exponential parameter, exp  
+- Fits 1D Gaussian pRF model with parameters, mu & sigma; includes a compressive spatial summation exponential parameter, exp  
 
 ### Version 1.1
 - Added cost option to parameter estimation
@@ -31,6 +31,11 @@
 - Reorganized pRF package structure
 - Edited misc. functions for use outside of pRF package (i.e., removing some forced structure arguments)
 
-### Version 2.2
-- ~~~~!!!!!~~~~ WIP WIP WIP WIP WIP ~~~~!!!!!~~~~
-- Edited HRF options, can now provide other parameterized HRF function other than the BoyntonHRF
+### Version 3.0
+- createScan.m can now also take in FreeSurfer .nii, .nii.gz, .mgz files along with .label files (to select ROIs)
+- Edited HRF options, can now provide other parameterized HRF function other than the BoyntonHRF such as the TwoGammaHRF from SPM
+- Edited HRF estimating methods, can now iteratively fit HRF parameters either voxels that past a correlation threshold and/or are in the top percentage of initial correlation fits
+- Incorporated timing interpolation if stimulus image and voxel time courses were collected at different sampling rates
+- Add plotHRF.m to visualize the HRF used to fit the pRF model
+- Optimizing for redundant code calls and efficiency. Also reduced nested structure layers
+- General documentation editing for spelling errors and clarity
