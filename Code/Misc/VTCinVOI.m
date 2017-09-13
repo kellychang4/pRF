@@ -1,11 +1,11 @@
-function [roi] = VTCinVOI(bc, voi, voiNum, normalize)
-% [roi] = VTCinVOI(bc, voi, voiNum, normalize)
+function [roi] = VTCinVOI(vtc, voi, voiNum, normalize)
+% [roi] = VTCinVOI(vtc, voi, voiNum, normalize)
 %
 % Extracts .VTC time courses within the specified .VOI region
 %
 % Input:
-%   bc              As given by bc = BVQXfile(vtcFileName)
-%   voi             As given by voi = BVQXfile(voiFileName)
+%   vtc             As given by vtc = BVQXfile(vtcPath)
+%   voi             As given by voi = BVQXfile(voiPath)
 %   voiNum          Index number (or range) of the voi(s) to be indexed 
 %                   (default: 1:length(voi.VOI))
 %   normalize       Normalize vtc data: (vtc - mean(vtc)) / sd(vtc) (true) 
@@ -32,22 +32,22 @@ if ~exist('voiNum', 'var')
     voiNum = 1:length(voi.VOI);
 end
 
-% if normalize does not exist, default = 1
+% if normalize does not exist, default = true
 if ~exist('normalize', 'var')
-    normalize = 1;
+    normalize = true;
 end
 
 %% Extract .vtc Data Located within .voi Space
 
 % vtc size and relative position (offset) within vmr volume
-vtcData = bc.VTCData;
+vtcData = vtc.VTCData;
 vtcSize = size(vtcData);
-vtcOffset = [bc.XStart bc.YStart bc.ZStart];
+vtcOffset = [vtc.XStart vtc.YStart vtc.ZStart];
 
 % normalize vtc
 if normalize
-    vtcData = vtcData - repmat(mean(vtcData), vtcSize(1), 1); % subtract each voxel by its mean
-    vtcData = vtcData ./ repmat(std(vtcData), vtcSize(1), 1); % normalize each voxel by its SD
+    vtcData = bsxfun(@minus, vtcData, mean(vtcData)); % subtract each voxel by its mean
+    vtcData = bsxfun(@rdivide, vtcData, std(vtcData)); % normalize each voxel by its SD
 end
 
 for i = voiNum
@@ -55,7 +55,7 @@ for i = voiNum
     v = voi.BVCoords(i);
     
     % convert voi coordinates to vtc coordinates and resolution
-    v = round((v - repmat(vtcOffset, size(v,1), 1))/bc.Resolution) + 1;
+    v = round(bsxfun(@minus, v, vtcOffset)/vtc.Resolution) + 1;
     
     % take only voi voxels inside the vtc volume
     indx = (v(:,1) > 0 & v(:,1) <= vtcSize(2) & ...
@@ -70,7 +70,7 @@ for i = voiNum
     roi(i).name = voi.VOI(i).Name;
     
     % only keep the unique indices
-    roi(i).id = unique(v);
+    roi(i).id = unique(v)';
     
     % reshape vtc data into linear space
     vtcData = reshape(vtcData, [vtcSize(1) prod(vtcSize(2:end))]);

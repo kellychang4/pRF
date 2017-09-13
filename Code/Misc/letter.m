@@ -9,7 +9,7 @@ function [out] = letter(n, letterCase)
 %
 % Inputs:
 %   n               An integer that specifies which alpha code
-%   letterCase      Upper or lower case, string (default: 'lower')
+%   letterCase      Upper or lower case, function handle (default: @lower)
 %
 % Outputs:
 %   out             Specified alpha code based on 'n'
@@ -25,15 +25,13 @@ function [out] = letter(n, letterCase)
 %% Input Control
 
 if ~exist('letterCase', 'var')
-    letterCase = 'lower';
+    letterCase = @lower;
 end
 
 %% Create Alphabetical Code
 
 alphabet = 'abcdefghijklmnopqrstuvwxyz';
 
-raise = cumsum(length(alphabet) .^ (1:100));
-raise = sum(n > raise) + 1;
 if n < 0
     error('n must be greater than 0');
 elseif n > length(alphabet)
@@ -54,4 +52,4 @@ else
     out = alphabet(n);
 end
 
-out = eval([letterCase '(out);']);
+out = letterCase(out);

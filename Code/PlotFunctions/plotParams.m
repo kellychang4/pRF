@@ -1,8 +1,8 @@
 function [opt] = plotParams(collated, opt)
 % [opt] = plotParams(collated, opt)
 %
-% Plot histograms of the estimated pRF parameters. Maximum of 16 parameters
-% will be plotted on a single figure.
+% Plot histograms of the given estimated pRF parameters. Maximum of 16 
+% parameters will be plotted on a single figure.
 %
 % Inputs:
 %   collated        A structure containing all fitted pRF information as
@@ -12,8 +12,8 @@ function [opt] = plotParams(collated, opt)
 %                   plots desired with fields:
 %       params      Parameter names to be plotted (default: first 16
 %                   parameters available in 'collated' except tau + delta)
-%       bestSeed    Plot best seed parameters (true) OR not (false),
-%                   logical (default: false)
+%       bestSeed    Plot best seed parameters (true) OR the estimated pRFs
+%                   (false), -logical (default: false)
 %       corrThr     Correlation threshold to index parameter values by,
 %                   numeric (default: 0.01)
 %       subplot     A vector specifing the number of rows and columns the
@@ -27,6 +27,9 @@ function [opt] = plotParams(collated, opt)
 % Output:
 %   opt             The same 'opt' structure with additional fields filled
 %                   in if previously empty
+%
+% Example:
+% plotParams(collated)
 
 % Written by Kelly Chang - July 25, 2016
 
@@ -45,7 +48,7 @@ for i = 1:length(opt)
     if ~isfield(opt(i), 'params') || isempty(opt(i).params)
         if ~opt(i).bestSeed % pRF parameters
             opt(i).params = setdiff(fieldnames(collated.pRF), ...
-                {'id', 'didFit', 'tau', 'delta', 'bestSeed'});
+                {'id', 'didFit', 'bestSeed'});
         else % best seed parameters
             opt(i).params = setdiff(fieldnames(bestSeed), {'seedID'});
         end

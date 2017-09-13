@@ -2,7 +2,7 @@ function [x] = lengthOut(start, by, len)
 % [x] = lengthOut(start, by, len) 
 % 
 % Returns a vector of length 'len' starting with the number 'start' 
-% incremented by'by' 
+% incremented by 'by'.
 % 
 % Inputs: 
 %   start     Starting value of the vector, numeric
@@ -12,6 +12,9 @@ function [x] = lengthOut(start, by, len)
 % Output:
 %   x         Vector of length 'len' starting with the number 'start'
 %             incremented by 'by'
+%
+% Example: 
+% lengthOut(0, 2, 10)
 
 % Written by Kelly Chang - July 25, 2016
 

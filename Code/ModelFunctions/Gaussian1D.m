@@ -18,7 +18,6 @@ function [out] = Gaussian1D(params, funcOf)
 %
 % Output:
 %   out           Output of the Gaussian function from the given parameters
-%                 given as a column
 
 % Written by Kelly Chang - June 21, 2016
 
@@ -29,5 +28,4 @@ if nargin < 1
     out.funcOf = {'x'};
 else
     out = exp(-((funcOf.x-params.mu).^2)/(2*params.sigma^2));
-    out = out(:);
 end

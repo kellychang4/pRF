@@ -21,22 +21,22 @@ function [convStim] = createConvStim(scan, hrf)
 
 % Written by Kelly Chang - June 21, 2016
 
-%% Input Control
+%% Input Control and Timing Interpolation
 
-if isfield(hrf, 'hrf') && isfield(scan, 'dt') % pre-defined hrf + dt
+if isfield(hrf, 'fit') % if fitted, use fitted hrf paramaters
+    for i = 1:length(hrf.freeList)
+        hrf.(hrf.freeList{i}) = hrf.fit.(hrf.freeList{i});
+    end
+end
+
+if isfield(hrf, 'hrf') % pre-defined hrf 
     hemo = spline(hrf.t, hrf.hrf, min(hrf.t):scan.dt:max(hrf.t));
-elseif isfield(hrf, 'hrf') && ~isfield(scan, 'dt') % pre-defined hrf + TR
-    hemo = spline(hrf.t, hrf.hrf, min(hrf.t):scan.TR:max(hrf.t));
-elseif ~isfield(hrf, 'hrf') && isfield(scan, 'dt') % params + dt 
-    hrf = createHRF(assignfield(hrf, 'dt', scan.dt));
-    hemo = feval(hrf.func, hrf, hrf);
-elseif ~isfield(hrf, 'hrf') &&  ~isfield(scan, 'dt') % params + TR
-    hrf = createHRF(assignfield(hrf, 'dt', scan.TR));
-    hemo = feval(hrf.func, hrf, hrf);
+elseif ~isfield(hrf, 'hrf') % paramaterized hrf
+    hemo = feval(hrf.funcName, hrf, min(hrf.t):scan.dt:max(hrf.t));
 end
 
 %% Convolve Stimulus Image with HRF
 
 tmp = scan.TR * convn(scan.stimImg, hemo(:));
 convStim = eval(sprintf('tmp(1:size(scan.stimImg,1)%s);', repmat(',:',1,ndims(tmp)-1)));
-convStim = reshape(convStim, size(convStim,1), []);
+convStim = reshape(convStim, size(scan.stimImg,1), []);

@@ -1,7 +1,8 @@
 function [flag] = openParallel(flag)
-% [parallelOpt] = openParallel(parallelOpt)
+% [flag] = openParallel(flag)
 %
-% Opens all available parallel cores, if there are parallel cores
+% Opens all available parallel cores, if there are parallel cores to open.
+% If there are no parallel cores to open, will return flag as false.
 % 
 % Input:
 %   flag              Open parallel cores (true) OR not (false), logical
@@ -9,6 +10,9 @@ function [flag] = openParallel(flag)
 %
 % Output:
 %   flag              Parallel cores opened (true) or not (false), logical
+%
+% Example:
+% flag = openParallel(true);
 
 % Written by Kelly Chang - July 19, 2016
 

@@ -3,25 +3,30 @@ function [predicted] = predictpRF(collated, data)
 %
 % Returns a predicted structure containing information about the actual
 % time course from data and the predicted time course of data as predicted
-% using the model (collated)
+% using the model (collated) on the given data.
 %
 % Inputs:
 %   collated        A structure containing information about the model
 %                   that will be used to predict a time course from the
-%                   given data
+%                   given data created from [collated] = estpRF()
 %   data            A structure containing all scan(s) information that the
-%                   model will be predicting a time course on
+%                   model will be predicting a time course on as given from
+%                   [data] = createScan(scanOpt, opt)
 %
-% Outputs:
-%   predicted       A structure containing information about the predicted
-%                   time course of data estimated by the pRF model
-%                   (collated) with fields:
-%       id          Voxel id number
-%       tc          Voxel time course (trom data structure)
+% Output:
+%   predicted       A structure containing information about the actual and
+%                   predicted time course of data estimated by the pRF 
+%                   model (collated) with fields:
+%       voxID       Voxel id number
+%       tc          Voxel time course (from the given data structure)
 %       pred        Predicted time course created by predicting on data
 %                   with the model (collated)
 %       corr        Correlation coefficient of the actual time course with
 %                   the predicted time course
+%
+% Example:
+% % create predicted time courses of the scans used to create the pRFs
+% predicted = predictpRF(collated, collated.scan);
 
 % Written by Kelly Chang - July 19, 2016
 
@@ -33,36 +38,31 @@ if ~isfield(data, 'convStim')
     end
 end
 
-%% CSS Input Control
-
-nVox = length(data(1).vtc);
-scanExp = ones(1,nVox);
+scanExp = ones(1,length(collated.pRF));
 if collated.opt.CSS
     scanExp = [collated.pRF.exp];
 end
 
 %% Initialize 'Predicted' Structure
 
+nVox = length(data(1).voxID);
 for i = 1:length(data)
-    for i2 = 1:nVox
-        tmp(i2).id = data(i).vtc(i2).id;
-        tmp(i2).tc = data(i).vtc(i2).tc;
-        tmp(i2).pred = NaN;
-        tmp(i2).corr = NaN;
-    end
-    predicted(i).vtc = tmp;
+    predicted(i).voxID = data(i).voxID;
+    predicted(i).tc = data(i).vtc;
+    predicted(i).pred = NaN(size(data(i).stimImg,1), nVox);
+    predicted(i).corr = NaN(1,nVox);
 end
 
 %% Predict Time Course
 
-for vN = 1:nVox
-    if collated.pRF(vN).didFit
-        for i = 1:length(data)
-            tmp = data(i).convStim * ascolumn(callModel(collated.opt.model, collated.pRF(vN), data(i)));
-            predicted(i).vtc(vN).pred = pos0(tmp) .^ scanExp(i);
+for i = 1:length(data) % for each scan
+    for i2 = 1:nVox % for each voxel
+        if collated.pRF(i2).didFit % if the voxel was fitted
+            model = feval(collated.opt.model, collated.pRF(i2), data(i).funcOf);
+            predicted(i).pred(:,i2) = pos0(data(i).convStim * model(:)) .^ scanExp(i2);
             
-            predicted(i).vtc(vN).corr = callCorr(collated.opt.corr, ...
-                predicted(i).vtc(vN).tc, predicted(i).vtc(vN).pred, data(i));
+            predicted(i).corr(i2) = callCorr(collated.opt.corr, predicted(i).tc(:,i2), ...
+                predicted(i).pred(:,i2), data);
         end
     end
 end

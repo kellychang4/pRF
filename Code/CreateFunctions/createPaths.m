@@ -1,10 +1,10 @@
 function [paths] = createPaths(paths)
 % [paths] = createPaths(paths)
 %
-% If no argument is passed, returns a structure with common fields for
-% paths to relevant directories. If a 'paths' structure is passed as an
-% argument, will check if all directories exist and if not will create the
-% directories.
+% If no argument is passed, returns a structure with paths with field
+% 'main' to the currect working directory. If a 'paths' structure is passed
+% as an argument, will check if all directories exist and if not will 
+% create the directories.
 %
 % Input:
 %   <No Arg>        If no argument is passed, will return an initialized
@@ -15,9 +15,13 @@ function [paths] = createPaths(paths)
 %                   directory. 
 %
 % Output:
-%   paths           A structure containing paths to common directories of
-%                   interest
+%   paths           A structure containing paths to directories of interest
 %       main        Main directory (default: current working directory)
+%
+% Example:
+% paths = createPaths(); % initialize 'paths' structure
+% paths.test = fullfile(paths.main, 'Testing'); % new directory pathing
+% paths = createPaths(paths); % will create the 'paths.test' directory
 
 % Written by Kelly Chang - July 20, 2016
 

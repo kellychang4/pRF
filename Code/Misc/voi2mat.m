@@ -22,7 +22,7 @@ function [roi] = voi2mat(voiPath, vtcPath)
 [roiPath,saveName] = fileparts(voiPath);
 saveName = [saveName '.mat'];
 
-roi = rmdfield(VTCinVOI(BVQXfile(vtcPath), BVQXfile(voiPath)), 'vtcData');
+roi = rmfield(VTCinVOI(BVQXfile(vtcPath), BVQXfile(voiPath)), 'vtcData');
 
 save(fullfile(roiPath, saveName), 'roi');
 fprintf('Saved As: %s\n', saveName);

@@ -33,15 +33,21 @@ function [seeds] = createSeeds(opt)
 
 % Written by Kelly Chang - May 23, 2016
 
+%% Input Control
+
+params = fieldnames(opt);
+if any(structfun(@(x) any(isnan(x)), opt))
+    errFlds = params(structfun(@(x) any(isnan(x)), opt));
+    error('''%s'' contain(s) NaNs', strjoin(errFlds, ''' & '''));
+end
+
 %% Create All Possible Seed Combinations
 
 params = fieldnames(opt);
-tmp = cellfun(@(x) sprintf('opt.%s',x), params, 'UniformOutput', false);
-eval(sprintf('[%s]=ndgrid(%s);', strjoin(params, ','), strjoin(tmp, ',')));
-
 nSeeds = prod(structfun(@length, opt));
+eval(sprintf('[opt.%1$s]=ndgrid(opt.%1$s);', strjoin(params, ',opt.')));
 for i = 1:nSeeds
     for i2 = 1:length(params)
-        seeds(i).(params{i2}) = eval(sprintf('%s(i);', params{i2}));
+        seeds(i).(params{i2}) = opt.(params{i2})(i);
     end
 end

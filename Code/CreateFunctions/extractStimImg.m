@@ -1,5 +1,5 @@
 function [scan] = extractStimImg(scan, scanOpt, nScan, opt)
-% [scan] = createStimImg(scan, opt)
+% [scan] = createStimImg(scan, scanOpt, nScan, opt)
 %
 % Extracts a MxN stimulus image where M is the number of volumes in the scan
 % (time progresses down the y-axis) and N is the length upsampled (or not)
@@ -39,11 +39,30 @@ function [scan] = extractStimImg(scan, scanOpt, nScan, opt)
 % - The stimulus image can be visualized with imagesc(scan.stimImg)
 
 % Written by Kelly Chang - March 29, 2017
+% Edited by Kelly Chang - July 19, 2017
+
+%% Error Checking
+
+funcOf = getfield(feval(opt.model), 'funcOf'); % <funcOf> variables
+if ~all(ismember(funcOf, scanOpt.order))
+    errFlds = funcOf(~ismember(funcOf, scanOpt.order));
+    error('Missing ''scanOpt.order'' for these ''funcOf'' variable(s): %s', strjoin(errFlds, ', '));
+end
+
+if ~ismember('nVols', scanOpt.order)
+    error('Missing ''nVols'' when defining ''scanOpt.order''');
+end
 
 %% Extract Stimulus Image
 
-load(scanOpt.paradigmPath{nScan}); % load paradigm file
-stimImg = eval(scanOpt.stimImg{nScan});
+[~,file,ext] = fileparts(scanOpt.matPath{nScan}); 
+scan.matFile = [file ext]; % name of .mat file
+
+indx = cellfun(@(x) find(strcmp(['nVols' funcOf],x)), scanOpt.order);
+
+load(scanOpt.matPath{nScan}); % load .mat file
+stimImg = eval(scanOpt.stimImg); % assign stimulus image
+stimImg = permute(stimImg, indx); % reorder stimulus image
 stimSize = size(stimImg);
 
 if ~isfield(scanOpt, 'dt')
@@ -54,8 +73,19 @@ end
 
 %% Extract Stimulus Dimensions
 
-paramNames = feval(opt.model);
-for i = 1:length(paramNames.funcOf)
-    scan.(paramNames.funcOf{i}) = 1:stimSize(i+1);
+for i = 1:length(funcOf)
+    scan.funcOf.(funcOf{i}) = 1:stimSize(i+1);
 end
 scan.stimImg = stimImg;
+
+%% Meshgrid 'funcOf' Parameters for Models with more than 1 Dimension
+
+if length(funcOf) > 1
+   eval(sprintf('[scan.funcOf.%1$s]=meshgrid(scan.funcOf.%1$s);', ...
+       strjoin(funcOf, ',scan.funcOf.')));
+endw
+
+%% Organize Output
+
+scan = orderfields(scan, {'matFile', 'funcOf', 'boldFile', 'boldSize', ...
+    'nVols', 'dur', 'TR', 'dt', 't', 'voxID', 'vtc', 'stimImg'});

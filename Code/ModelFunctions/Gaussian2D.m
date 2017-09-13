@@ -22,7 +22,7 @@ function [out] = Gaussian2D(params, funcOf)
 %
 % Outputs:
 %    out			Output of the two dimensional Gaussian function from 
-%                   the given parameters reported as a column
+%                   the given parameters
 
 % Written by Kelly Chang - October 16, 2016
 

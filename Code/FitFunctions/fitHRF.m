@@ -1,5 +1,5 @@
-function [err] = fitModel(fitParams, vN, scan, opt)
-% [err] = fitModel(fitParams, vN, scan, opt)
+function [err] = fitHRF(fitParams, vN, scan, opt)
+% [err] = fitHRF(fitParams, vN, scan, opt)
 %
 % Calcuates the average correlation error (negative) for a given voxel
 % across all scans
@@ -26,6 +26,7 @@ function [err] = fitModel(fitParams, vN, scan, opt)
 
 corr = 0;
 for i = 1:length(scan)
+    scan(i).convStim = createConvStim(scan(i), fitParams);
     model = feval(opt.model, fitParams, scan(i).funcOf);
     pred = pos0(scan(i).convStim * model(:)) .^ fitParams.exp;
     

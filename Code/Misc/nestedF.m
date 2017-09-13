@@ -10,8 +10,8 @@ function [stats] = nestedF(model1, model2)
 %   model2          Output of [collated] = estpRF() for the complex model
 %
 % Output:
-%   stats           A structure containing the voxel id, F-statistic, and
-%                   p-value for each voxel after a nested F-test
+%   stats           A structure containing voxel id(s), F-statistic(s), and
+%                   p-value(s) for each voxel after a nested F-test
 
 % Written by Kelly Chang - February 2, 2017
 
@@ -37,7 +37,7 @@ if ~all(ismember(regexprep(model1.opt.freeList, '[^A-Za-z]', ''), ...
         strjoin(errParams, ', '));
 end
 
-%% Extract Information Models 1 (Simple) and 2 (Complex)
+%% Extract Information from Model 1 (Simple) and Model 2 (Complex)
 
 n = model1.scan(1).nVols;
 r1 = [model1.pRF.corr];
@@ -46,13 +46,8 @@ p1 = length(model1.opt.freeList);
 r2 = [model2.pRF.corr];
 p2 = length(model2.opt.freeList);
 
-F = (((r2.^2)-(r1.^2))/(p2-p1)) ./ ((1-(r2.^2))/(n-p2));
-p = 1 - fcdf(F, p2-p1, n-p2);
+%% Calculate Nested F Test Statistics
 
-%% Collect Statistics Output
-
-for i = 1:length(model1.pRF)
-    stats(i).id = model1.pRF(1).id;
-    stats(i).F = F(i);
-    stats(i).p = p(i);
-end
+stats.id = [model1.pRF.id];
+stats.F = (((r2.^2)-(r1.^2))/(p2-p1)) ./ ((1-(r2.^2))/(n-p2));
+stats.p = 1 - fcdf(stats.F, p2-p1, n-p2);

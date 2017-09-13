@@ -2,7 +2,7 @@ function [params] = var2params(var, params, freeList)
 % [params] = var2params(var, params, freeList)
 %
 % Support function for 'fit.m'. Turns values 'var' into a field within
-% 'param' with a field name given in order from 'freeList'.
+% 'params' with a field name given in order from 'freeList'.
 %
 % Inputs:
 %   var         New values to be stored in the 'params' structure under
@@ -28,11 +28,16 @@ if ischar(freeList)
     freeList = {freeList};
 end
 
+if length(var) ~= length(freeList)
+    error('Number of values need to match the number of variables provided');
+end
+
 %% Transforms 'var' into Structure 'params'
 
 count = 1;
-varStr = regexprep(freeList, '(\(.*\))', '');
-numList = cellfun(@(x) regexprep(x,'[()]',''), regexp(freeList, '(\(.*\))', 'match'), 'UniformOutput', false);
+varStr = regexprep(freeList, '(\(.*\))', ''); 
+numList = cellfun(@(x) regexprep(x,'[()]',''), ...
+    regexp(freeList, '(\(.*\))', 'match'), 'UniformOutput', false);
 for i = 1:length(varStr)
     if ~isempty(numList{i})
         tmp = length(params.(varStr{i})(str2num(char(numList{i}))));

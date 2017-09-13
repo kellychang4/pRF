@@ -1,18 +1,18 @@
-function [x] = asrow(x)
-% [x] = asrow(x)
+function [x] = ascol(x)
+% [x] = ascol(x)
 % 
-% Returns x as a row vector.
+% Returns x as a column vector.
 % 
 % Input:
 %   x       A vector or matrix of x
 %
 % Output:
-%   x       The same x but returned as a row vector
+%   x       The same x but returned as a column vector
 %
 % Example:
-% asrow(randn(x))
+% ascol(randn(x))
 
-% Written by Kelly Chang - July 28, 2016
+% Written by Kelly Chang - July 25, 2016
 
 %% Input Control
 
@@ -22,4 +22,4 @@ end
 
 %% Unwrap 'x'
 
-x = x(:)';
+x = x(:);

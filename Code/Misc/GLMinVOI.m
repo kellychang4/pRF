@@ -1,14 +1,14 @@
 function [b] = GLMinVOI(glm, voi, voiNum)
-% [beta] = GLMinVOI(glm, voi [,voiNum])
+% [b] = GLMinVOI(glm, voi ,voiNum)
 %
 % Inputs:
-%   glm             As given by glm = BVQXfile(glmFileName)
-%   voi             As given by voi = BVQXfile(voiFileName)
+%   glm             As given by glm = BVQXfile(glmPath)
+%   voi             As given by voi = BVQXfile(voiPath)
 %   voiNum          Index number (or range) of the voi(s) to be indexed 
 %                   (default: 1:length(voi.VOI))
 % 
 % Output:
-%   b              A structure containing glm indices and data
+%   b              A structure containing glm indices and data with fields:
 %       id         Linear indices of voi used for the glm matrix
 %       beta       A [nVoxel nPredictors] matrix of beta weights within the 
 %                  roi
@@ -33,7 +33,7 @@ for i = voiNum
     v = voi.BVCoords(i);
     
     % convert voi coordinates to vtc coordinates and resolution
-    v = round((v - repmat(glmOffset, size(v,1), 1))/glm.Resolution) + 1;
+    v = round(bsxfun(@minus, v, glmOffset)/glm.Resolution) + 1;
     
     % take only voi voxels inside the vtc volume
     indx = (v(:,1) > 0 & v(:,1) <= glmSize(1) & ...
