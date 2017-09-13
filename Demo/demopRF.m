@@ -8,16 +8,15 @@ clear all; close all;
 subject = 'Demo';
 
 % directories
-% paths = createPaths(); % initialize paths structure
-% paths.data = fullfile(paths.main, 'DemoData'); % path to demostration data directory
-% paths.results = fullfile(paths.main, 'DemoExampleResults'); % path to output results directory
-% paths = createPaths(paths); % create paths if they do not already exist
+paths = createPaths(); % initialize paths structure
+paths.data = fullfile(paths.main, 'DemoData'); % path to demostration data directory
+paths.results = fullfile(paths.main, 'DemoExampleResults'); % path to output results directory
+paths = createPaths(paths); % create paths if they do not already exist
 
 % model options
 opt = createOpt('Tonotopy');
 opt.roi = 'DemoROI.voi';
 opt.estHRF = 3; 
-opt.upSample = 3;
 opt.parallel = true;
 
 %% Convert DemoVTC.mat to DemoData.vtc
@@ -37,9 +36,9 @@ end
 %% Variables (cont.)
 
 % scan options
-scanOpt.vtcPath = fullfile(paths.data, 'DemoData.vtc');
-scanOpt.paradigmPath = fullfile(paths.data, 'DemoData.mat');
-scanOpt.voiPath = fullfile(paths.data, opt.roi);
+scanOpt.boldPath = fullfile(paths.data, 'DemoData.vtc');
+scanOpt.matPath = fullfile(paths.data, 'DemoData.mat');
+scanOpt.roiPath = fullfile(paths.data, opt.roi);
 scanOpt.paradigm.x = 'paradigm';
 
 scan = createScan(scanOpt, opt); % creating 'scan' structure
@@ -57,7 +56,7 @@ hrfOpt.dt = scan(1).TR;
 
 hrf = createHRF(hrfOpt); % creating 'hrf' structure
 
-%% Estimate and Save pRF
+%% Estimate and Save pRFs
 
 [collated] = estpRF(scan, seeds, hrf, opt);
 
@@ -78,4 +77,4 @@ plotParams(collated, paramOpt);
 plotPredicted(collated);
 
 % fitted hrf
-plotHRF(collated);
+plotHRF(collated.hrf);
