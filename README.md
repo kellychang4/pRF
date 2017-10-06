@@ -68,8 +68,9 @@ Kelly Chang - @kellychang4 - kchang4@uw.edu
 
 # Dependencies
 
-[BVQXtools/NeuroElf](http://support.brainvoyager.com/available-tools/52-matlab-tools-bvxqtools/232-getting-started.html)
-[mrVista/FreeSurfer](https://github.com/vistalab/vistasoft/tree/master/external/freesurfer)
+* [BVQXtools/NeuroElf](http://support.brainvoyager.com/available-tools/52-matlab-tools-bvxqtools/232-getting-started.html)
+* [mrVista/FreeSurfer](https://github.com/vistalab/vistasoft/tree/master/external/freesurfer)
+
 --- 
 
 # References
