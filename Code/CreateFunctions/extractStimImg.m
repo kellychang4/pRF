@@ -75,7 +75,7 @@ end
 
 if isfield(scanOpt, 'funcOf')
     for i = 1:length(funcOf)
-        scan.funcOf.(funcOf{i}) = eval(scanOpt.fucnOf.(funcOf{i}));
+        scan.funcOf.(funcOf{i}) = eval(scanOpt.funcOf.(funcOf{i}));
     end
 else % not given
     for i = 1:length(funcOf)
