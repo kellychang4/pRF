@@ -38,6 +38,8 @@ function [scan] = createScan(scanOpt, opt)
 %                            scan.dur/size(stimImg,1))
 %       order                Order of the stimulus image dimensions
 %                            (default: [nVolumes <opt.model's funcOf>])
+%       funcOf               A structure containing the stimulus function 
+%                            of dimension range as fields
 % -------------------------------------------------------------------------
 %   opt                      A structure containing option for pRF model
 %                            fitting containing fields:

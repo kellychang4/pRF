@@ -73,8 +73,14 @@ end
 
 %% Extract Stimulus Dimensions
 
-for i = 1:length(funcOf)
-    scan.funcOf.(funcOf{i}) = 1:stimSize(i+1);
+if isfield(scanOpt, 'funcOf')
+    for i = 1:length(funcOf)
+        scan.funcOf.(funcOf{i}) = eval(scanOpt.fucnOf.(funcOf{i}));
+    end
+else % not given
+    for i = 1:length(funcOf)
+        scan.funcOf.(funcOf{i}) = 1:stimSize(i+1);
+    end
 end
 scan.stimImg = stimImg;
 
@@ -83,7 +89,7 @@ scan.stimImg = stimImg;
 if length(funcOf) > 1
    eval(sprintf('[scan.funcOf.%1$s]=meshgrid(scan.funcOf.%1$s);', ...
        strjoin(funcOf, ',scan.funcOf.')));
-endw
+end
 
 %% Organize Output
 
