@@ -2,10 +2,10 @@ function [scan] = extractStimImg(scan, scanOpt, nScan, opt)
 % [scan] = createStimImg(scan, scanOpt, nScan, opt)
 %
 % Extracts a MxN stimulus image where M is the number of volumes in the scan
-% (time progresses down the y-axis) and N is the length upsampled (or not)
-% unique units of the stimulus. 1s in the matrix indicate when and which
-% stimulus was presented depending on the row (when, volume number) and
-% column (which, upsampled (or not) stimulus index)
+% (time progresses down the y-axis) and N is the length of unique units of 
+% the stimulus. 1s in the matrix indicate when and which stimulus was 
+% presented depending on the row (when, volume number) and column (which, 
+% stimulus index)
 %
 % Inputs:
 %   scan                  A stucture containing information about the
@@ -28,8 +28,7 @@ function [scan] = extractStimImg(scan, scanOpt, nScan, opt)
 %                         case of code modification of this function, the
 %                         outputed 'scan' structure MUST include the
 %                         following fields:
-%       <model funcOf>    Upsampled (or not) unique units of the given
-%                         stimulus
+%       <model funcOf>    The unique units of the given stimulus
 %       stimImg           A M x Ni x ... x Nn matrix where M is the number
 %                         of volumes of the scan and Ni through Nn is the
 %                         length(scan.<funcOf>) or the desired resolution

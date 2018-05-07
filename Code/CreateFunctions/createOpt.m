@@ -41,8 +41,6 @@ function [opt] = createOpt(type)
 %                       correpond to the free parameters being estimated:
 %       <parameter      A vector with the free parameter [minimum maximum]
 %           name(s)>    boundaries in the cost function
-%       upSample        The desired up-sampling factor to create a new
-%                       resolution of the stimulus image (default: 1)
 %       parallel        Parallel processing (true) OR not (false), logical
 %                       (default: trues)
 %       quiet           Output progress in command window when fitting
@@ -79,7 +77,6 @@ switch lower(type)
         opt.corrThr = 0.01;
         opt.corr = 'pearson';
         opt.cost = struct();
-        opt.upSample = 1;
         opt.parallel = true;
         opt.quiet = false;
     case {'tonotopy', 'tono', 't'}
@@ -94,7 +91,6 @@ switch lower(type)
         opt.corrThr = 0.01;
         opt.corr = 'pearson';
         opt.cost = struct();
-        opt.upSample = 1;
         opt.parallel = true;
         opt.quiet = false;
     case 'default'
@@ -109,7 +105,6 @@ switch lower(type)
         opt.corrThr = 0.01;
         opt.corr = 'pearson';
         opt.cost = struct();
-        opt.upSample = 1;
         opt.parallel = true;
         opt.quiet = false;
     otherwise

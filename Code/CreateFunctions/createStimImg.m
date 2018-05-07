@@ -2,10 +2,10 @@ function [scan] = createStimImg(scan, scanOpt, nScan, opt)
 % [scan] = createStimImg(scan, scanOpt, nScan, opt)
 %
 % Creates a MxNi stimulus image where M is the number of volumes in the scan
-% (time progresses down the y-axis) and Ni is the length upsampled (or not)
-% unique units of the stimulus. 1s in the matrix indicate when and which
-% stimulus was presented depending on the row (when, volume number) and
-% column (which, upsampled (or not) stimulus index)
+% (time progresses down the y-axis) and Ni is the length of unique units of
+% the stimulus. 1s in the matrix indicate when and which stimulus was 
+% presented depending on the row (when, volume number) and column (which,
+% stimulus index)
 %
 % Inputs:
 %   scan                  A stucture containing information about the
@@ -24,8 +24,6 @@ function [scan] = createStimImg(scan, scanOpt, nScan, opt)
 %       nVols             Number of volumes in the scan
 %   opt                   Options for creating the stimulus image with
 %                         fields:
-%       upSample          Optional, desired up sampling factor for the new
-%                         resolution of the stimulus image
 %
 % Outputs:
 %   scan                  The same 'scan' structure, but with additional
@@ -33,8 +31,7 @@ function [scan] = createStimImg(scan, scanOpt, nScan, opt)
 %                         case of code modification of this function, the
 %                         outputed 'scan' structure MUST include the
 %                         following fields:
-%       <model funcOf>    Upsampled (or not) unique units of the given
-%                         stimulus
+%       <model funcOf>    The unique units of the given stimulus
 %       stimImg           A MxN matrix where M is the number of instances
 %                         of the paradigm as specified by the paradigm
 %                         sequence for the particular scan and N is the
@@ -57,12 +54,8 @@ funcOf = getfield(eval(opt.model), 'funcOf');
 load(scanOpt.matPath{nScan}); % load paradigm file
 for i = 1:length(funcOf)
     scan.paradigm.(funcOf{i}) = eval(['[' scanOpt.paradigm.(funcOf{i}) ']']);
-    scan.k.(funcOf{i}) = unique(scan.paradigm.(funcOf{i})(~isnan(scan.paradigm.(funcOf{i}))));
-    
-    % Interpolate Up-Sampled Resolution of funcOf Variables
-    scan.funcOf.(funcOf{i}) = interp1(1:opt.upSample:length(scan.k.(funcOf{i}))*opt.upSample, ...
-        scan.k.(funcOf{i}), 1:(length(scan.k.(funcOf{i}))*opt.upSample));
-    scan.funcOf.(funcOf{i}) = scan.funcOf.(funcOf{i})(1:end-(opt.upSample-1));
+    scan.k.(funcOf{i}) = unique(scan.paradigm.(funcOf{i})(~isnan(scan.paradigm.(funcOf{i}))));    
+    scan.funcOf.(funcOf{i}) = scan.k.(funcOf{i});
 end
 
 %% Error Check

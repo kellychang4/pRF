@@ -37,6 +37,6 @@ end
 
 %% Convolve Stimulus Image with HRF
 
-tmp = scan.TR * convn(scan.stimImg, hemo(:));
+tmp = scan.dt * convn(scan.stimImg, hemo(:));
 convStim = eval(sprintf('tmp(1:size(scan.stimImg,1)%s);', repmat(',:',1,ndims(tmp)-1)));
 convStim = reshape(convStim, size(scan.stimImg,1), []);
