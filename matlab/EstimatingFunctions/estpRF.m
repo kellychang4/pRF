@@ -106,7 +106,7 @@ end
 
 for i = 1:nVox
     pRF(i).id = scan(1).voxID(i); % voxel 'id' number
-    pRF(i).indx = scan(i).voxIndx(i,:); 
+    pRF(i).index = scan(1).voxIndex(i,:); 
     pRF(i).didFit = false;
     pRF(i).corr = NaN;
     pRF(i).bestSeed = NaN;
@@ -169,7 +169,7 @@ for i = 1:nVox
     tmp = hrf;
     tmp.corr = NaN;
     tmp.didFit = false;
-    if ~opt.CSS; tmp.exp = 1; end;
+    if ~opt.CSS; tmp.exp = 1; end
     tmp.seedCorr = pRF(i).bestSeed.corr;
     for i2 = 1:length(freeName) % load 'fitParams' with bestSeed params
         tmp.(freeName{i2}) = pRF(i).bestSeed.(freeName{i2});
@@ -208,7 +208,7 @@ end
 
 %% Organize Output
 
-pRF = orderfields(pRF, ['id' 'didFit' freeName 'corr' 'bestSeed']);
+pRF = orderfields(pRF, ['id' 'index', 'didFit' freeName 'corr' 'bestSeed']);
 collated = collate(scan, seeds, hrf, pRF, opt);
 
 %% Final Timings
