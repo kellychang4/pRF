@@ -42,9 +42,9 @@ function [scan] = extractStimImg(scan, scanOpt, nScan, opt)
 
 %% Error Checking
 
-funcOf = getfield(feval(opt.model), 'funcOf'); % <funcOf> variables
-if ~all(ismember(funcOf, scanOpt.order))
-    errFlds = funcOf(~ismember(funcOf, scanOpt.order));
+funcVars = getfield(feval(opt.model), 'funcOf'); % <funcOf> variables
+if ~all(ismember(funcVars, scanOpt.order))
+    errFlds = funcVars(~ismember(funcVars, scanOpt.order));
     error('Missing ''scanOpt.order'' for these ''funcOf'' variable(s): %s', strjoin(errFlds, ', '));
 end
 
@@ -57,7 +57,7 @@ end
 [~,file,ext] = fileparts(scanOpt.matPath{nScan}); 
 scan.matFile = [file ext]; % name of .mat file
 
-indx = cellfun(@(x) find(strcmp(['nVols' funcOf],x)), scanOpt.order);
+indx = cellfun(@(x) find(strcmp(['nVols' funcVars],x)), scanOpt.order);
 
 load(scanOpt.matPath{nScan}); % load .mat file
 stimImg = eval(scanOpt.stimImg); % assign stimulus image
@@ -73,21 +73,21 @@ end
 %% Extract Stimulus Dimensions
 
 if isfield(scanOpt, 'funcOf')
-    for i = 1:length(funcOf)
-        scan.funcOf.(funcOf{i}) = eval(scanOpt.funcOf.(funcOf{i}));
+    for i = 1:length(funcVars)
+        scan.funcOf.(funcVars{i}) = eval(scanOpt.funcOf.(funcVars{i}));
     end
 else % not given
-    for i = 1:length(funcOf)
-        scan.funcOf.(funcOf{i}) = 1:stimSize(i+1);
+    for i = 1:length(funcVars)
+        scan.funcOf.(funcVars{i}) = 1:stimSize(i+1);
     end
 end
 scan.stimImg = stimImg;
 
 %% Meshgrid 'funcOf' Parameters for Models with more than 1 Dimension
 
-if length(funcOf) > 1
+if length(funcVars) > 1 && ~isequal(size(scan.funcOf.(funcVars{1})), size(scan.stimImg,2:3))
    eval(sprintf('[scan.funcOf.%1$s]=meshgrid(scan.funcOf.%1$s);', ...
-       strjoin(funcOf, ',scan.funcOf.')));
+       strjoin(funcVars, ',scan.funcOf.')));
 end
 
 %% Organize Output

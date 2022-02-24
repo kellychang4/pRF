@@ -31,11 +31,11 @@ function [scan] = createBVScan(boldPath, roiPath)
 
 %% Extract Scan Information from .vtc (and .voi)
 
-bold = BVQXfile(boldPath); % load .vtc file
+bold = xff(boldPath); % load .vtc file
 if ~all(cellfun(@isempty, roiPath))
     vtc = []; % initialize vtc
     for i = 1:length(roiPath)
-        vtc = [vtc VTCinVOI(bold, BVQXfile(roiPath{i}))];
+        vtc = [vtc VTCinVOI(bold, xff(roiPath{i}))];
     end
 else
     vtc = fullVTC(bold);

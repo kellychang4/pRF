@@ -41,7 +41,7 @@ end
 
 % vtc size and relative position (offset) within vmr volume
 vtcData = vtc.VTCData;
-vtcSize = size(vtcData);
+vtcSize = vtc.GetVolumeSize;
 vtcOffset = [vtc.XStart vtc.YStart vtc.ZStart];
 
 % normalize vtc
@@ -58,22 +58,28 @@ for i = voiNum
     v = round(bsxfun(@minus, v, vtcOffset)/vtc.Resolution) + 1;
     
     % take only voi voxels inside the vtc volume
-    indx = (v(:,1) > 0 & v(:,1) <= vtcSize(2) & ...
-            v(:,2) > 0 & v(:,2) <= vtcSize(3) & ...
-            v(:,3) > 0 & v(:,3) <= vtcSize(4));
+    indx = (v(:,1) > 0 & v(:,1) <= vtcSize(1) & ...
+            v(:,2) > 0 & v(:,2) <= vtcSize(2) & ...
+            v(:,3) > 0 & v(:,3) <= vtcSize(3));
     v = v(indx,:);
     
+    % keep only unique voxels (occurs because of resolution change)
+    v = unique(v, 'rows'); 
+    
     % transform voi [x y z] coordinates into linear index equivalents
-    v = sub2ind(vtcSize(2:end), v(:,1), v(:,2), v(:,3));
+    linIndx = sub2ind(vtcSize, v(:,1), v(:,2), v(:,3));
     
     % name of the roi
     roi(i).name = voi.VOI(i).Name;
     
-    % only keep the unique indices
-    roi(i).id = unique(v)';
+    % indices of roi (in functional indices)
+    roi(i).index = v;
+    
+    % linear indices of roi
+    roi(i).id = linIndx;
     
     % reshape vtc data into linear space
-    vtcData = reshape(vtcData, [vtcSize(1) prod(vtcSize(2:end))]);
+    vtcData = reshape(vtcData, [vtc.NrOfVolumes prod(vtcSize)]);
     
     % take only vtc data inside voi voxels in linear space
     roi(i).vtcData = vtcData(:,roi(i).id);
