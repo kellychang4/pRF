@@ -106,6 +106,7 @@ end
 
 for i = 1:nVox
     pRF(i).id = scan(1).voxID(i); % voxel 'id' number
+    pRF(i).indx = scan(i).voxIndx(i,:); 
     pRF(i).didFit = false;
     pRF(i).corr = NaN;
     pRF(i).bestSeed = NaN;

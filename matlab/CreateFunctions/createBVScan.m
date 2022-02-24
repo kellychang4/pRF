@@ -48,5 +48,6 @@ scan.nVols = bold.NrOfVolumes; % number of volumes in the scan
 scan.TR = bold.TR/1000; % seconds
 scan.dur = scan.nVols*scan.TR; % scan duration, seconds
 scan.t = 0:scan.TR:(scan.dur-scan.TR); % time vector, seconds
+scan.voxIndex = cat(1, vtc.indx); % voxel index (functional space)
 scan.voxID = [vtc.id]; % voxel id number (linearized)
 scan.vtc = [vtc.vtcData]; % voxel time course
