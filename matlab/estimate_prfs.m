@@ -1,5 +1,5 @@
-function [collated] = estpRF(scan, seeds, hrf, opt)
-% [collated] = estpRF(scan, seeds, hrf, opt)
+function [collated] = estimate_prfs(scan, seeds, hrf, opt)
+% [collated] = estimate_prfs(scan, seeds, hrf, opt)
 %
 % Estimates a pRF model given the scan, seeds, hrf, and options
 %
@@ -50,14 +50,28 @@ function [collated] = estpRF(scan, seeds, hrf, opt)
 %       corr                Correlation from the best seed
 
 % Written by Kelly Chang - May 25, 2016
+% Edited by Kelly Chang - June 6, 2022
+
+%% Global Variables
+
+paramNames = eval(opt.model);
+scanExp = ones(1, length(seeds)); % no exponent factor
+freeName = regexprep(opt.freeList, '[^A-Za-z]', '');
+
+ANATOMICAL_TYPE = 'volume'; % volume space, default
+if any(strcmp(fieldnames(scan), 'vertex')); ANATOMICAL_TYPE = 'surface'; end
+
+switch ANATOMICAL_TYPE
+    case 'volume'
+        nv = length(scan(1).voxId);
+        prfFlds = ['id', 'index', 'didFit', freeName, 'corr', 'bestSeed'];
+    case 'surface'
+        nv = length(scan(1).vertex);
+        prfFlds = ['vertex', 'didFit', freeName, 'corr', 'bestSeed'];
+end
 
 %% Variables and Input Control
 
-nVox = length(scan(1).voxID);
-freeName = regexprep(opt.freeList, '[^A-Za-z]', '');
-
-paramNames = eval(opt.model);
-scanExp = ones(1,length(seeds)); % no exponent factor
 if ~opt.CSS && ismember('exp', freeName)
     fprintf('NOTE: ''opt.CSS'' set as TRUE due to ''exp'' in ''opt.freeList''\n');
     opt.CSS = true;
@@ -104,15 +118,18 @@ end
 
 %% Initialize pRF Structure
 
-for i = 1:nVox
-    pRF(i).id = scan(1).voxID(i); % voxel 'id' number
-    pRF(i).index = scan(1).voxIndex(i,:); 
-    pRF(i).didFit = false;
-    pRF(i).corr = NaN;
-    pRF(i).bestSeed = NaN;
-    for i2 = 1:length(freeName)
-        pRF(i).(freeName{i2}) = NaN;
-    end
+for i = 1:nv % for each voxel or vertex
+    for i2 = 1:length(prfFlds)
+        if strcmp(prfFlds{i2}, 'id')
+            pRF(i).id = scan(1).voxID(i); % voxel 'id' number
+        elseif strcmp(prfFlds{i2}, 'index')
+            pRF(i).index = scan(1).voxIndex(i,:);
+        elseif strcmp(prfFlds{i2}, 'vertex')
+            pRF(i).vertex = scan(1).vertex(i); % vertex index
+        else
+            pRF(i).(prfFlds{i2}) = NaN;
+        end
+    end    
 end
 
 %% Open Parallel Cores
@@ -136,11 +153,11 @@ end
 %% Calculating Best Seeds
 
 fprintf('Calculating Best Seeds\n');
-parfor i = 1:nVox
+parfor i = 1:nv % for each voxel or vertex
     if ~opt.quiet && opt.parallel
-        parallelProgressBar(nVox, 'Calculating Best Seeds');
-    elseif ~opt.quiet && mod(i,floor(nVox/10)) == 0 % display voxel count every 10th of voxels
-        fprintf('Calculating Best Seed: Voxel %d of %d\n', i, nVox);
+        parallelProgressBar(nv, 'Calculating Best Seeds');
+    elseif ~opt.quiet && mod(i,floor(nv/10)) == 0 % display voxel count every 10th of voxels
+        fprintf('Calculating Best Seed: Voxel %d of %d\n', i, nv);
     end
     
     % find best seeds to intialize pRF fitting
@@ -165,7 +182,7 @@ end
 
 %% Create 'fitParams' Structure for pRF Fitting
 
-for i = 1:nVox
+for i = 1:nv % for each voxel or vertex
     tmp = hrf;
     tmp.corr = NaN;
     tmp.didFit = false;
@@ -198,7 +215,7 @@ opt.stopTime = datestr(now);
 
 %% Collect Final pRF Values
 
-for i = 1:nVox
+for i = 1:nv % for each voxel or vertex
     pRF(i).didFit = fittedParams(i).didFit;
     pRF(i).corr = fittedParams(i).corr;
     for i2 = 1:length(freeName)
@@ -208,7 +225,7 @@ end
 
 %% Organize Output
 
-pRF = orderfields(pRF, ['id' 'index', 'didFit' freeName 'corr' 'bestSeed']);
+pRF = orderfields(pRF, prfFlds);
 collated = collate(scan, seeds, hrf, pRF, opt);
 
 %% Final Timings
