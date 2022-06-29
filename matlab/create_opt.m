@@ -1,5 +1,5 @@
-function [opt] = createOpt(type)
-% [opt] = createOpt(type)
+function [opt] = create_opt(type)
+% [opt] = create_opt(type)
 %
 % Creates a 'opt' structure initialized with all possible fields
 % (see Outputs for the list of field names)
@@ -68,12 +68,12 @@ switch lower(type)
     case {'retinotopy', 'retina', 'ret', 'r'}
         opt.map = 'Retinotopy';
         opt.model = 'Gaussian2D';
-        opt.freeList = {'xMu', 'yMu', 'sigma'};
+        opt.freeList = {'x0', 'y0', 'sigma'};
         opt.CSS = false;
         opt.roi = '';
         opt.estHRF = NaN;
-        opt.topHRF = 0.1;
-        opt.hrfThr = 0.25;
+%         opt.topHRF = 0.1;
+%         opt.hrfThr = 0.25;
         opt.corrThr = 0.01;
         opt.corr = 'pearson';
         opt.cost = struct();
@@ -86,8 +86,8 @@ switch lower(type)
         opt.CSS = true;
         opt.roi = '';
         opt.estHRF = NaN;
-        opt.topHRF = 0.1;
-        opt.hrfThr = 0.25;
+%         opt.topHRF = 0.1;
+%         opt.hrfThr = 0.25;
         opt.corrThr = 0.01;
         opt.corr = 'pearson';
         opt.cost = struct();
@@ -100,8 +100,8 @@ switch lower(type)
         opt.CSS = false;
         opt.roi = '';
         opt.estHRF = NaN;
-        opt.topHRF = 0.1;
-        opt.hrfThr = 0.25;
+%         opt.topHRF = 0.1;
+%         opt.hrfThr = 0.25;
         opt.corrThr = 0.01;
         opt.corr = 'pearson';
         opt.cost = struct();

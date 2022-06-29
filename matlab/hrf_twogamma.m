@@ -1,5 +1,5 @@
-function [hrf] = TwoGammaHRF(params,t)
-% [hrf] = TwoGammaHRF(params,t)
+function [hrf] = hrf_twogamma(params,t)
+% [hrf] = hrf_twogamma(params,t)
 %
 % SPM's Two Gamma HRF function
 %

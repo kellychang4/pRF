@@ -59,29 +59,37 @@ scan.matFile = [file ext]; % name of .mat file
 
 indx = cellfun(@(x) find(strcmp(['nVols' funcVars],x)), scanOpt.order);
 
-load(scanOpt.matPath{nScan}); % load .mat file
-stimImg = eval(scanOpt.stimImg); % assign stimulus image
+m = load(scanOpt.matPath{nScan}); % load .mat file
+stimImg = m.(scanOpt.stimImg);    % assign stimulus image
 stimImg = permute(stimImg, indx); % reorder stimulus image
 stimSize = size(stimImg);
 
-if ~isfield(scanOpt, 'dt')
-    scan.dt = scan.dur / stimSize(1); % seconds per frame
-else 
-    scan.dt = scanOpt.dt;
-end
+scan.stimImg = stimImg;
 
 %% Extract Stimulus Dimensions
 
 if isfield(scanOpt, 'funcOf')
-    for i = 1:length(funcVars)
-        scan.funcOf.(funcVars{i}) = eval(scanOpt.funcOf.(funcVars{i}));
+    funcOf = m.(scanOpt.funcOf); % assign funcOf variable
+    
+    %%% calculate stimulus timing
+    scan.dt = funcOf.t(2) - funcOf.t(1);
+    
+    for i = 1:length(funcVars) % for each dimension
+        scan.funcOf.(funcVars{i}) = funcOf.(funcVars{i});
     end
 else % not given
+    
+    %%% stimulus timing
+    scan.dt = scan.dur / stimSize(1); % seconds per frame
+    
     for i = 1:length(funcVars)
         scan.funcOf.(funcVars{i}) = 1:stimSize(i+1);
     end
+    
 end
-scan.stimImg = stimImg;
+
+% if stimulus timing given, override manual calculations
+if isfield(scanOpt, 'dt'); scan.dt = scanOpt.dt; end
 
 %% Meshgrid 'funcOf' Parameters for Models with more than 1 Dimension
 
@@ -92,5 +100,14 @@ end
 
 %% Organize Output
 
-scan = orderfields(scan, {'matFile', 'funcOf', 'boldFile', 'boldSize', ...
-    'nVols', 'dur', 'TR', 'dt', 't', 'voxIndex', 'voxID', 'vtc', 'stimImg'});
+volumeFlds = {'matFile', 'funcOf', 'boldFile', 'boldSize', ...
+    'nVols', 'dur', 'TR', 'dt', 't', 'voxIndex', 'voxID', 'vtc', 'stimImg'};
+
+surfaceFlds = {'matFile', 'funcOf', 'boldFile', 'boldSize', ...
+    'nVols', 'dur', 'TR', 'dt', 't', 'vertex', 'vtc', 'stimImg'};
+
+if any(strcmp(fieldnames(scan), 'vertex'))
+    scan = orderfields(scan, surfaceFlds);
+else
+    scan = orderfields(scan, volumeFlds); 
+end

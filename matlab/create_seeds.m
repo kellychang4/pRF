@@ -1,5 +1,5 @@
-function [seeds] = createSeeds(opt)
-% [seeds] = createSeeds(opt)
+function [seeds] = create_seeds(opt)
+% [seeds] = create_seeds(opt)
 %
 % Creates a 'seeds' structure with all the possible combinations of all the
 % specified parameters passed through in the 'opt' argument. Each instance
@@ -43,11 +43,12 @@ end
 
 %% Create All Possible Seed Combinations
 
+seeds = struct(); 
 params = fieldnames(opt);
 nSeeds = prod(structfun(@length, opt));
 eval(sprintf('[opt.%1$s]=ndgrid(opt.%1$s);', strjoin(params, ',opt.')));
-for i = 1:nSeeds
-    for i2 = 1:length(params)
+for i = 1:nSeeds % for each seed
+    for i2 = 1:length(params) % for each parameter
         seeds(i).(params{i2}) = opt.(params{i2})(i);
     end
 end

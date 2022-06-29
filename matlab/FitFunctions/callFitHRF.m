@@ -55,9 +55,15 @@ else
     fprintf('%d voxels were selected for HRF fitting\n', sum(indx));
     freeListHRF = fitParams(1).freeList;
     fitParams = fitParams(indx);
-    for i = 1:length(scan)
-        scan(i).voxID = scan(i).voxID(indx);
-        scan(i).vtc = scan(i).vtc(:,indx);
+    try
+        for i = 1:length(scan)
+            scan(i).voxID = scan(i).voxID(indx);
+            scan(i).vtc = scan(i).vtc(:,indx);
+        end
+    catch
+        for i = 1:length(scan)
+            scan(i).vertex = scan(i).vertex(indx);
+        end
     end
     barName = sprintf('Estimating HRF (%d voxels, %s): %s', ...
         sum(indx), '%d', strjoin(freeListHRF, ' & '));

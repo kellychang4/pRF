@@ -1,5 +1,5 @@
-function [hrf] = createHRF(opt)
-% [hrf] = createHRF(opt)
+function [hrf] = create_hrf(opt)
+% [hrf] = create_hrf(opt)
 %
 % METHOD 1: PARAMETERIZED HRF
 % Creates a 'hrf' structure containing parameters to creates a
@@ -13,10 +13,10 @@ function [hrf] = createHRF(opt)
 % METHOD 1: PARAMETERIZED HRF
 %   opt            A structure containing paramaters for creating the 'hrf'
 %                  structure:
-%       funcName   Name of the HRF function, string (default: 'BoyntonHRF')
+%       funcName   Name of the HRF function, string (default: 'hrf_boynton')
 %       dt         Time vector step size, seconds (default: 2)
 %       maxt       Ending time, seconds (Default: 30)
-%       type       Specifies hrf type - ONLY used with BoyntonHRF. There
+%       type       Specifies hrf type - ONLY used with hrf_boynton. There
 %                  are canonical tau and delta's for 'vision' and 'audition'.
 %                  Specifying no type forces parameters tau and delta to be
 %                  manually defined, string
@@ -44,8 +44,8 @@ function [hrf] = createHRF(opt)
 %       t          Time vector (0:opt.dt:opt.maxt)
 %       freeList   List of free to fit parameters of the alternative HRF
 %                  (defaults:
-%                       - BoyntonHRF: tau, delta
-%                       - TwoGammaHRF: delta, c, a1, a2)
+%                       - hrf_boynton: tau, delta
+%                       - hrf_twogamna: delta, c, a1, a2)
 %
 % METHOD 2: PRE-DEFINED HRF
 %   hrf            A structure containing hrf information with fields:
@@ -66,7 +66,7 @@ if ~exist('opt', 'var')
 end
 
 if ~isfield(opt, 'funcName') && ~isfield(opt, 'hrf') 
-    opt.funcName = 'BoyntonHRF';
+    opt.funcName = 'hrf_boynton';
 end
 
 method = find(ismember({'funcName','hrf'}, fieldnames(opt)));
@@ -74,15 +74,15 @@ switch method
     case 1 % parameterized hrf
         %% Input Control  
         
-        if ~isfield(opt, 'dt');
+        if ~isfield(opt, 'dt')
             error('''dt'' field must be specified');
         end
         
-        if ~strcmp(opt.funcName, 'BoyntonHRF') && isfield(opt, 'type')
+        if ~strcmp(opt.funcName, 'hrf_boynton') && isfield(opt, 'type')
             error('Cannot specify type ''%s'' with the ''%s'' function', opt.type, opt.funcName);
         end
         
-        if strcmp(opt.funcName, 'BoyntonHRF') && ~isfield(opt, 'n')
+        if strcmp(opt.funcName, 'hrf_boynton') && ~isfield(opt, 'n')
             opt.n = 3;
         end
         
@@ -99,12 +99,12 @@ switch method
             error('Unrecognized parameter for %s: %s', opt.funcName, strjoin(errFlds, ', '));
         end
         
-        if strcmp(opt.funcName, 'BoyntonHRF') && ~all(ismember(params, flds)) && ~isfield(opt, 'type')
+        if strcmp(opt.funcName, 'hrf_boynton') && ~all(ismember(params, flds)) && ~isfield(opt, 'type')
             errFlds = params(~ismember(params, fieldnames(opt)));
             error('All parameters for the %s must be specfied\nMissing: %s', opt.funcName, strjoin(errFlds, ', '));
         end
         
-        if strcmp(opt.funcName, 'BoyntonHRF') && ~isfield(opt, 'freeList')
+        if strcmp(opt.funcName, 'hrf_boynton') && ~isfield(opt, 'freeList')
             opt.freeList = {'tau', 'delta'};
         end
         
@@ -130,7 +130,7 @@ switch method
         
         %% Create 'hrf' Structure
         
-        if strcmp(opt.funcName,'BoyntonHRF') && isfield(opt, 'type')
+        if strcmp(opt.funcName,'hrf_boynton') && isfield(opt, 'type')
             switch opt.type
                 case {'vision', 'vis', 'v', 1} % predefined hrf for vision
                     opt.tau = 1.5;
@@ -144,7 +144,7 @@ switch method
             end
         end
         
-        if strcmp(opt.funcName, 'TwoGammaHRF')
+        if strcmp(opt.funcName, 'hrf_twogamna')
             if ~isfield(opt, 'delta'); hrf.delta = 0; else hrf.delta = opt.delta; end
             if ~isfield(opt, 'c'); hrf.c = 6; else hrf.c = opt.c; end
             if ~isfield(opt, 'a1'); hrf.a1 = 6; else hrf.a1 = opt.a1; end

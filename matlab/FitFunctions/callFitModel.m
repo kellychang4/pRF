@@ -21,18 +21,18 @@ function [fittedParams] = callFitModel(fitParams, freeList, scan, opt)
 
 %% Variables and Input Control
 
-nVox = length(scan(1).voxID);
+try nv = length(scan(1).voxID); catch; nv = length(scan(1).vertex); end
 freeName = regexprep(freeList, '[^A-Za-z]', '');
 barName = sprintf('Estimating: %s', strjoin(freeName, ' & '));
 
 %% Fitting Model
 
 fittedParams = fitParams;
-for i = 1:nVox % for each voxel
+for i = 1:nv % for each voxel or vertex
     if ~opt.quiet && opt.parallel
-        parallelProgressBar(nVox, barName);
-    elseif ~opt.quiet && mod(i,floor(nVox/10)) == 0 % display voxel count every 100 voxels
-        fprintf('Fitting pRF: Voxel %d of %d\n', i, nVox);
+        parallelProgressBar(nv, barName);
+    elseif ~opt.quiet && mod(i,floor(nv/10)) == 0 % display voxel count every 100 voxels
+        fprintf('Fitting pRF: %d of %d\n', i, nv);
     end
     
     if ~isnan(fitParams(i).seedCorr) && fitParams(i).seedCorr > opt.corrThr

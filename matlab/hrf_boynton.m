@@ -1,4 +1,4 @@
-function [hrf] = BoyntonHRF(params,t)
+function [hrf] = hrf_boynton(params,t)
 % [out] = BoyntonHRF(params,t)
 %
 % Returns a Gamma function over the vector 't' based on the equation:
