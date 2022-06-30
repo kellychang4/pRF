@@ -1,5 +1,5 @@
-function [scan] = extractStimImg(scan, scanOpt, nScan, opt)
-% [scan] = createStimImg(scan, scanOpt, nScan, opt)
+function [scan] = extract_stimulus_image(scan, scanOpt, nScan, opt)
+% [scan] = extract_stimulus_image(scan, scanOpt, nScan, opt)
 %
 % Extracts a MxN stimulus image where M is the number of volumes in the scan
 % (time progresses down the y-axis) and N is the length of unique units of 
@@ -54,12 +54,11 @@ end
 
 %% Extract Stimulus Image
 
-[~,file,ext] = fileparts(scanOpt.matPath{nScan}); 
-scan.matFile = [file ext]; % name of .mat file
+scan.matFile = filename(scanOpt.stimFiles{nScan}); % name of .mat file
 
 indx = cellfun(@(x) find(strcmp(['nVols' funcVars],x)), scanOpt.order);
 
-m = load(scanOpt.matPath{nScan}); % load .mat file
+m = load(scanOpt.stimFiles{nScan}); % load .mat file
 stimImg = m.(scanOpt.stimImg);    % assign stimulus image
 stimImg = permute(stimImg, indx); % reorder stimulus image
 stimSize = size(stimImg);
@@ -96,18 +95,4 @@ if isfield(scanOpt, 'dt'); scan.dt = scanOpt.dt; end
 if length(funcVars) > 1 && ~isequal(size(scan.funcOf.(funcVars{1})), size(scan.stimImg,2:3))
    eval(sprintf('[scan.funcOf.%1$s]=meshgrid(scan.funcOf.%1$s);', ...
        strjoin(funcVars, ',scan.funcOf.')));
-end
-
-%% Organize Output
-
-volumeFlds = {'matFile', 'funcOf', 'boldFile', 'boldSize', ...
-    'nVols', 'dur', 'TR', 'dt', 't', 'voxIndex', 'voxID', 'vtc', 'stimImg'};
-
-surfaceFlds = {'matFile', 'funcOf', 'boldFile', 'boldSize', ...
-    'nVols', 'dur', 'TR', 'dt', 't', 'vertex', 'vtc', 'stimImg'};
-
-if any(strcmp(fieldnames(scan), 'vertex'))
-    scan = orderfields(scan, surfaceFlds);
-else
-    scan = orderfields(scan, volumeFlds); 
 end
