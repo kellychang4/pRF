@@ -1,5 +1,5 @@
-function [coeff] = callCorr(corrName, tc, pred, scan)
-% [coeff] = callCorr(corrName, tc, pred, scan)
+function [coeff] = call_correlation(corrName, tc, pred, scan)
+% [coeff] = call_correlation(corrName, tc, pred, scan)
 %
 % Calls the specified correlation and returns the correlation coeffecient
 % of the actual time course 'tc' and the predicted time course 'pred'

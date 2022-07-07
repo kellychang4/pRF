@@ -32,13 +32,11 @@ function [var,lb,ub,varStr] = params2varcon(params, freeList)
 % Adapted from 'params2var', written Summer of '00
 % Rewritten by Kelly Chang, February 10, 2017
 
-%% Evaluating 
+%% Evaluating Parameter Boundaries
 
-freeList = regexprep(freeList, '[= ]*', ''); % remove spaces and '='
-expr = '(?<l>[^<>]*)(?<s1>(<|>))(?<m>[^<>]*)(?<s2>(<|>))?(?<r>.*)?';
-token = regexp(freeList, expr, 'names'); 
+token = parse_inequalities(freeList);
 
-for i = 1:length(freeList)
+for i = 1:length(freeList) % for each parameter
     if isempty(token{i}) % no inequality symbols
         order = {'-Inf' 'Inf' 'freeList{i}'};
     elseif isempty(token{i}.s2) % one inequality symbol

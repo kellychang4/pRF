@@ -1,16 +1,14 @@
-function [out] = Gaussian1D(params, funcOf)
-% [out] = Gaussian1D(params, funcOf)
+function [out] = model_gaussian1d(params, funcOf)
+% [out] = model_gaussian1d(params, funcOf)
 %
 % One dimensional Gaussian function based on the equation:
 %
-% f(x) = exp(-((x-mu).^2)/(2*sigma^2))
+% f(x) = exp(-((x-x0).^2)/(2*sigma^2))
 %
 % Inputs:
-%   <No Arg>      No arguments, will return a structure containing the 
-%                 required field names for 'params' and 'funcOf'
 %   params        A structure that specifes the parameters of the Gaussian
 %                 with fields:
-%       mu        Mean of the Gaussian
+%       x0        Mean of the Gaussian
 %       sigma     Standard deviation of the Gaussian
 %   funcOf        A structure that speficies the dimensions the Gaussian is
 %                 a function of:
@@ -23,9 +21,4 @@ function [out] = Gaussian1D(params, funcOf)
 
 %% Equation
 
-if nargin < 1
-    out.params = {'mu', 'sigma'};
-    out.funcOf = {'x'};
-else
-    out = exp(-((funcOf.x-params.mu).^2)/(2*params.sigma^2));
-end
+out = exp(-((funcOf.x - params.x0).^2) ./ (2.* params.sigma .^ 2));

@@ -1,21 +1,21 @@
-function [scans] = create_scan(scanOpt, opt)
-% [scans] = create_scan(scanOpt, opt)
+function [scans] = create_scans(scanOpt, opt)
+% [scans] = create_scans(scanOpt, opt)
 %
-% Creates a structure 'scan' containing information about the scan(s) given
+% Creates a structure 'scans' containing information about the scan(s) given
 % by the corresponding 'scanOpt.boldFiles' and 'scanOpt.roiFiles' through
 % one of two methods
 %
 % METHOD 1: PARADIGM
-% Will create a 'scan' structure based on the given
+% Will create a 'scans' structure based on the given
 % 'scanOpt.paradigm.<funcOf>' sequence(s), will create a stimulus image
 % from the given paradigm sequence(s)
 % 
 % METHOD 2: STIMULUS IMAGE
-% Will create a 'scan' structre based on pre-defined stimulus image(s)
+% Will create a 'scans' structre based on pre-defined stimulus image(s)
 %
 % Inputs:
 %   scanOpt                  A structure containing option to create the
-%                            'scan' structure with fields:
+%                            'scans' structure with fields:
 %       boldFiles            Path(s) to all BOLD files(s), string
 %       roiFiles             Path(s) to all stimulus/ protocol files, string
 %       roiFiles             Path(s) to all ROI file(s), string

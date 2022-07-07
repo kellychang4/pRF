@@ -67,7 +67,7 @@ end
 switch lower(type)
     case {'retinotopy', 'retina', 'ret', 'r'}
         opt.map = 'Retinotopy';
-        opt.model = 'Gaussian2D';
+        opt.model = 'model_gaussian2d';
         opt.freeList = {'x0', 'y0', 'sigma'};
         opt.CSS = false;
         opt.roi = '';
@@ -81,7 +81,7 @@ switch lower(type)
         opt.quiet = false;
     case {'tonotopy', 'tono', 't'}
         opt.map = 'Tonotopy';
-        opt.model = 'Gaussian1D';
+        opt.model = 'model_gaussian1d';
         opt.freeList = {'mu', '0.01<sigma', '0<exp<1'};
         opt.CSS = true;
         opt.roi = '';
@@ -95,7 +95,7 @@ switch lower(type)
         opt.quiet = false;
     case 'default'
         opt.map = '';
-        opt.model = 'Gaussian1D';
+        opt.model = 'model_gaussian1d';
         opt.freeList = {'mu', 'sigma'};
         opt.CSS = false;
         opt.roi = '';

@@ -1,5 +1,5 @@
-function [coef] = pearson(x,y)
-% [coef] = pearson(x,y)
+function [r] = corr_pearson(x,y)
+% [r] = pearson(x,y)
 %
 % Calculates the Pearson cross-correlation coefficient for x and y
 % 
@@ -9,7 +9,7 @@ function [coef] = pearson(x,y)
 %               multiple columns
 %
 % Output:
-%   coef        The Pearson correlation coefficient
+%   r           The Pearson correlation coefficient
 
 % Written by Paola Binda - Feburary 11, 2012
 % Edited by Kelly Chang for pRF package - June 21, 2016
@@ -23,21 +23,21 @@ end
 %% Calcuate Correlationn Coefficient
 
 outClass = superiorfloat(x,y);
-coef = zeros(1, size(y,2), outClass);
+r = zeros(1, size(y,2), outClass);
 for i = 1:size(x,2) % loop through x columns
     for i2 = 1:size(y,2) % loop through y columns
         xi = x(:,i); 
         yi2 = y(:,i2);
         
         if ~all(~(isnan(xi) | isnan(yi2)))
-            coef(i,i2) = NaN;
+            r(i,i2) = NaN;
             continue
         end
         
         x0 = xi - mean(xi);
         y0 = yi2 - mean(yi2);
-        coef(i,i2) = (x0./norm(x0))' * (y0./norm(y0));    
+        r(i,i2) = (x0./norm(x0))' * (y0./norm(y0));    
     end
 end
-coef(coef > 1) = 1; 
-coef(coef < -1) = -1; % min/max drops NaNs
+r(r > 1) = 1; 
+r(r < -1) = -1; % min/max drops NaNs

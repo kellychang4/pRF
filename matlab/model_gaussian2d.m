@@ -1,16 +1,14 @@
-function [out] = Gaussian2D(params, funcOf)
-% [out] = Gaussian2D(params, funcOf)
+function [out] = model_gaussian2d(params, funcOf)
+% [out] = model_gaussian2s(params, funcOf)
 % 
 % Two dimensional Gaussian function based on this equation:
 % 
-% f(x,y) = exp(-((x-xMu).^2+(y-yMu).^2)/(2*sigma^2));
+% f(x,y) = exp(-((x-x0).^2+(y-y0).^2)/(2*sigma^2));
 %
 % Inputs:
-%   <No Arg>		No arguments, will return a structure containing the
-%					required field names for 'params' and 'funcOf'
 %   params			A structure that specifes the parameters of the model:
-%       xMu         X dimension center of the 2D Gaussian
-%       yMu         Y dimention center of the 2D Gaussian
+%       x0          X dimension center of the 2D Gaussian
+%       y0          Y dimention center of the 2D Gaussian
 %       sigma       Standard deviation of the 2D Gaussian, shared between
 %                   the x and y dimension
 %   funcOf			A structure that speficies the model function of
@@ -28,9 +26,5 @@ function [out] = Gaussian2D(params, funcOf)
 
 %% Equation
 
-if nargin < 1
-    out.params = {'xMu', 'yMu', 'sigma'};
-    out.funcOf = {'x', 'y'};
-else
-    out = exp(-((funcOf.x-params.xMu).^2+(funcOf.y-params.yMu).^2)/(2*params.sigma^2));
-end
+out = (exp(-((funcOf.x - params.x0).^2 + (funcOf.y - params.y0).^2) ./ ...
+    (2 .* params.sigma .^ 2)));
