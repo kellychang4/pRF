@@ -1,7 +1,9 @@
 function print_message(varargin)
 
-opt = varargin{1}; str = varargin{2}; params = varargin(3:end); 
+global GLOBAL_PARAMETERS;
 
-if ~opt.quiet
+str = varargin{1}; params = varargin(3:end); 
+
+if ~GLOBAL_PARAMETERS.print.quiet
     fprintf(str, params{:}); 
 end
