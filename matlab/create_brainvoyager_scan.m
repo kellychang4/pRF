@@ -1,13 +1,12 @@
-function [scan] = create_brainvoyager_scan(boldFiles, roiFiles)
-% [scan] = create_brainvoyager_scan(boldFiles, roiFiles)
+function [scan] = create_brainvoyager_scan(boldFile, roiFile)
+% [scan] = create_brainvoyager_scan(boldFile, roiFile)
 % 
 % Helpful function to createScan.m. Extracts the scan information from
-% BrainVoyager .vtc files (boldFiles) within a given .voi ROI.
+% BrainVoyager .vtc files (boldFile) within a given .voi ROI.
 %
 % Inputs: 
-%   boldFiles           BOLD file nanes (.vtc), string
-%   roiFiles            ROI file names (.voi), if empty string, 
-%                       will extract full brain time courses, string.
+%   boldFile            BOLD file name (.vtc), string
+%   roiFile             ROI file name (.voi), string.
 %
 % Output:
 %   scan                A structure containing the provided scan 
@@ -18,8 +17,7 @@ function [scan] = create_brainvoyager_scan(boldFiles, roiFiles)
 %       nVols           Number of volumes, numeric
 %       TR              Scan TR, seconds
 %       dur             Total scan duration, seconds
-%       t               Time vector of the scan in TRs, seconds
-%       voxID           Voxel index number, numeric
+%       voxel           Voxel index number, numeric
 %       vtc             Voxel time course in [nVolumes nVox] format,
 %                       numeric
 %
@@ -32,18 +30,10 @@ function [scan] = create_brainvoyager_scan(boldFiles, roiFiles)
 
 %% Extract Scan Information from .vtc (and .voi)
 
-bold = xff(boldFiles); % load .vtc file
-if ~all(cellfun(@isempty, roiFiles))
-    vtc = []; % initialize vtc
-    for i = 1:length(roiFiles)
-        vtc = [vtc VTCinVOI(bold, xff(roiFiles{i}))];
-    end
-else
-    vtc = fullVTC(bold);
-end
+bold = xff(boldFile); roi = xff(roiFile); 
+vtc = VTCinVOI(bold, roi); 
 
-[~,file,ext] = fileparts(boldFiles);
-scan.boldFile = [file ext]; % name of bold data file
+scan.boldFile = filename(boldFile); % name of bold data file
 scan.boldSize = size(bold.VTCData); % size of the .vtc data
 scan.nVols = bold.NrOfVolumes; % number of volumes in the scan
 scan.TR = bold.TR/1000; % seconds

@@ -1,7 +1,11 @@
-function [bestSeed] = initalize_best_seed(freeList, nv)
+function [bestSeed] = initialize_best_seed(freeList, nv)
 
-flds = ['seedId', freeList, 'corr'];
-for i2 = 1:length(flds) % for each field
-    bestSeed.(flds{i2}) = NaN;
+bestSeed = struct(); 
+for i = 1:nv % for each unit
+    bestSeed(i).vertex = labels(i); 
+    bestSeed(i).seedId = NaN;
+    for i2 = 1:length(freeList) % for each field
+        bestSeed(i2).(freeList{i2}) = NaN;
+    end
+    bestSeed(i).corr = NaN;
 end
-bestSeed = repmat(bestSeed, 1, nv);

@@ -1,24 +1,24 @@
-function [scans] = create_scans(scanOpt, opt)
-% [scans] = create_scans(scanOpt, opt)
+function [scans] = create_scans(scanInfo)
+% [scans] = create_scans(scanInfo)
 %
 % Creates a structure 'scans' containing information about the scan(s) given
-% by the corresponding 'scanOpt.boldFiles' and 'scanOpt.roiFiles' through
+% by the corresponding 'scanInfo.boldFiles' and 'scanInfo.roiFile' through
 % one of two methods
 %
 % METHOD 1: PARADIGM
 % Will create a 'scans' structure based on the given
-% 'scanOpt.paradigm.<funcOf>' sequence(s), will create a stimulus image
+% 'scanInfo.paradigm.<funcOf>' sequence(s), will create a stimulus image
 % from the given paradigm sequence(s)
 % 
 % METHOD 2: STIMULUS IMAGE
 % Will create a 'scans' structre based on pre-defined stimulus image(s)
 %
 % Inputs:
-%   scanOpt                  A structure containing option to create the
+%   scanInfo                 A structure containing option to create the
 %                            'scans' structure with fields:
 %       boldFiles            Path(s) to all BOLD files(s), string
-%       roiFiles             Path(s) to all stimulus/ protocol files, string
-%       roiFiles             Path(s) to all ROI file(s), string
+%       stimFiles            Path(s) to all stimulus/ protocol files, string
+%       roiFile              Path to ROI file, string
 %
 % -------------------------------------------------------------------------
 % METHOD 1: PARADIGM
@@ -39,17 +39,10 @@ function [scans] = create_scans(scanOpt, opt)
 %                            (default: [nVolumes <opt.model's funcOf>])
 %       funcOf               A structure containing the stimulus function 
 %                            of dimension range as fields
-% -------------------------------------------------------------------------
-%   opt                      A structure containing option for pRF model
-%                            fitting containing fields:
-%       model                Model name, also the function name to be
-%                            fitted string
-%       roi                  Name(s) of the ROI files if fitting within 
-%                            ROI(s), string
 %
 % Output:
 %   scans                    A structure with length 1xN where N is the
-%                            length of 'scanOpt.boldFiles' containing the
+%                            length of 'scanInfo.boldFiles' containing the
 %                            .vtc and scan's information with fields:
 %       stimFile             Name of the stimulus / protocol file , string
 %                            (i.e., 'Subj1_Paradigm_Set1.mat')
@@ -93,100 +86,45 @@ function [scans] = create_scans(scanOpt, opt)
 
 % Written by Kelly Chang - June 23, 2016
 % Edited by Kelly Chang - September 1, 2017
+% Edited by Kelly Chang - July 8, 2022
 
-%% Input Control
+%% Validate Function Arguments
 
-if ~isfield(scanOpt, 'boldFiles') || isempty(scanOpt.boldFiles)
-    error('No bold files selected.');
-end
+scanInfo = validate_create_scans(scanInfo);
 
-if ischar(scanOpt.boldFiles)
-    scanOpt.boldFiles = {scanOpt.boldFiles};
-end
-
-if ~isfield(scanOpt, 'roiFiles') && isempty(scanOpt.roiFiles)
-    error('No stimulus files selected');
-end
-
-if ischar(scanOpt.roiFiles)
-    scanOpt.roiFiles = {scanOpt.roiFiles};
-end
-
-if length(scanOpt.boldFiles) ~= length(scanOpt.stimFiles)
-    error('All bold files must have corresponding stimulus files.');
-end
-
-if ~isfield(scanOpt, 'roiFiles')
-    scanOpt.roiFiles = {''};
-end
-
-if ischar(scanOpt.roiFiles)
-    scanOpt.roiFiles = {scanOpt.roiFiles};
-end
-
-if isempty(opt.roi) && ~all(cellfun(@isempty, scanOpt.roiFiles))
-    error('No ''opt.roi'' when ''scanOpt.roiFiles'' is specified');
-end
-
-if ~isempty(opt.roi) && all(cellfun(@isempty, scanOpt.roiFiles))
-    error('No ''scanOpt.roiFiles'' when ''opt.roi'' is specified');
-end
-
-if isfield(scanOpt, 'paradigm') && isfield(scanOpt, 'stimImg')
-    error('Cannot specify both ''scanOpt.paradigm.<var>'' and ''scanOpt.stimImg''');
-end
-
-if isfield(scanOpt, 'paradigm') && ~isstruct(scanOpt.paradigm)
-    error('Must specify variable name(s) for ''scanOpt.paradigm.<var>''');
-end
-
-paramNames = eval(opt.model);
-if isfield(scanOpt, 'paradigm') && ~all(ismember(paramNames.funcOf, fieldnames(scanOpt.paradigm)))
-    errFlds = setdiff(paramNames.funcOf, fieldnames(scanOpt.paradigm));
-    error('Must specify paradigm.<var> for variable(s): %s', strjoin(errFlds, ', '));
-end
-
-if isfield(scanOpt, 'paradigm') && any(structfun(@isempty, scanOpt.paradigm))
-    errFlds = fieldnames(scanOpt.paradigm);
-    error('Must specify ''paradigm.<var>'' variable name(s) for: %s', ...
-        strjoin(errFlds(structfun(@isempty, scanOpt.paradigm)), ', '));
-end
-
-if isfield(scanOpt, 'stimImg') && isempty(scanOpt.stimImg)
-    error('Must specify a variable name for ''scanOpt.stimImg''');
-end
-
-if isfield(scanOpt, 'stimImg') && ~isfield(scanOpt, 'order')
-    scanOpt.order = ['nVols' paramNames.funcOf];
-end
+set_global_variables_with_scan_information(scanInfo);
 
 %% Creating 'scan' Structure
 
-flds = fieldnames(scanOpt); 
-scans = initialize_scans(scanOpt);
-stimImgMethod = char(flds(ismember(flds, {'paradigm', 'stimImg'})));
-for i = 1:length(scanOpt.boldFiles) % for each bold file
+n = length(scanInfo.boldFiles); 
+scans = initialize_scans(n);
+
+% stimImgMethod = char(flds(ismember(flds, {'paradigm', 'stimImg'})));
+
+for i = 1:n % for each bold file
     
-    [~,fname,ext] = fileparts(scanOpt.boldFiles{i});
-    print_message(opt, 'Loading: %s\n', [fname ext]); 
+    [~,fname,ext] = extract_fileparts(scanInfo.boldFiles{i});
+    print_message('Loading: %s\n', [fname ext]); 
     
-    switch ext % bold data format
+    %%% load bold information
+    switch char(ext) % bold data format
         case {'.vtc'} % BrainVoyager Volumetric
-            tmp = create_brainvoyager_scan(scanOpt.boldFiles{i}, scanOpt.roiFiles);
-        case {'.nii.gz', '.mgh'} % FreeSurfer Volumetric
+            tmp = create_brainvoyager_scan(scanInfo.boldFiles{i}, scanInfo.roiFile);
+        case {'.nii', '.nii.gz'} % FreeSurfer Volumetric
             % (!!!) this needs editing
-            tmp = create_freesurfer_scan(scanOpt.boldFiles{i}, scanOpt.roiFiles);
+            tmp = create_freesurfer_scan(scanInfo.boldFiles{i}, scanInfo.roiFile);
         case {'.gii'} % GiFTi Surface
-            tmp = create_gifti_scan(scanOpt.boldFiles{i}, scanOpt.roiFiles, ...
-                scanOpt.TR);
+            tmp = create_gifti_scan(scanInfo.boldFiles{i}, scanInfo.roiFile, ...
+                scanInfo.TR);
         otherwise
             error('Unrecognized file extension: %s', ext);
     end
     
+    %%% load stimulus information
     switch stimImgMethod % load stimulus data
         case 'paradigm' % specifying with paradigm sequence
-            scans(i) = create_stimulus_image(tmp, scanOpt, i, opt);
+            scans(i) = create_stimulus_image(tmp, scanInfo, i, opt);
         case 'stimImg' % extracting pre-made stimImg
-            scans(i) = extract_stimulus_image(tmp, scanOpt, i, opt);
+            scans(i) = extract_stimulus_image(tmp, scanInfo, i, opt);
     end
 end
