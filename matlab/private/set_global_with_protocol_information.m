@@ -1,4 +1,4 @@
-function set_global_variables_with_scan_information(scanInfo)
+function set_global_with_protocol_information(scanInfo)
 
 global GLOBAL_PARAMETERS; % declare global variable
 

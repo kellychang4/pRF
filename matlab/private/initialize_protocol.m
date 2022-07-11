@@ -1,4 +1,4 @@
-function [scans] = initialize_scans(n)
+function [protocol] = initialize_protocol(n)
 
 switch get_global_variables('prf.space')
     case 'volume'
@@ -38,4 +38,4 @@ switch get_global_variables('prf.space')
             };
 end
 
-scans = initialize_structure(n, flds); 
+protocol = initialize_structure(n, flds); 

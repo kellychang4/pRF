@@ -1,5 +1,5 @@
-function [scans] = create_scans(scanInfo)
-% [scans] = create_scans(scanInfo)
+function [protocol] = create_protocol(boldFiles, stimFiles, roiFile, varargin)
+% [scans] = create_protocol(scanInfo)
 %
 % Creates a structure 'scans' containing information about the scan(s) given
 % by the corresponding 'scanInfo.boldFiles' and 'scanInfo.roiFile' through
@@ -21,14 +21,6 @@ function [scans] = create_scans(scanInfo)
 %       roiFile              Path to ROI file, string
 %
 % -------------------------------------------------------------------------
-% METHOD 1: PARADIGM
-%       paradigm             A structure containing variable name(s) of the
-%                            paradigm sequence(s) located within the
-%                            paradigm files; optional, specifying will
-%                            let the code create the stimulus image 
-%            <funcOf         Stimulus paradigm sequence of the field
-%             parameters>    specified 'funcOf' parameter name
-%
 % METHOD 2: STIMULUS IMAGE
 %       stimImg              Name of the stimulus image variable within the
 %                            paradigm file(s), string; optional, specifying
@@ -90,41 +82,41 @@ function [scans] = create_scans(scanInfo)
 
 %% Validate Function Arguments
 
-scanInfo = validate_create_scans(scanInfo);
+validate_create_protocol(boldFiles);
+set_global_with_protocol_information(boldFiles);
 
-set_global_variables_with_scan_information(scanInfo);
+%% Creating 'protocol' Structure
 
-%% Creating 'scan' Structure
-
-n = length(scanInfo.boldFiles); 
-scans = initialize_scans(n);
-
-% stimImgMethod = char(flds(ismember(flds, {'paradigm', 'stimImg'})));
+n = length(boldFiles); 
+protocol = initialize_protocol(n);
 
 for i = 1:n % for each bold file
     
-    [~,fname,ext] = extract_fileparts(scanInfo.boldFiles{i});
-    print_message('Loading: %s\n', [fname ext]); 
-    
     %%% load bold information
-    switch char(ext) % bold data format
+    boldFile = boldFiles{i};
+    [~,boldName,boldExt] = extract_fileparts(boldFile);
+    print_message('Loading: %s\n', [boldName boldExt]); 
+    
+    switch boldExt % bold data format
         case {'.vtc'} % BrainVoyager Volumetric
-            tmp = create_brainvoyager_scan(scanInfo.boldFiles{i}, scanInfo.roiFile);
+            scan = create_brainvoyager_scan(boldFile, roiFile);
         case {'.nii', '.nii.gz'} % FreeSurfer Volumetric
             % (!!!) this needs editing
-            tmp = create_freesurfer_scan(scanInfo.boldFiles{i}, scanInfo.roiFile);
+            scan = create_freesurfer_scan(boldFile, roiFile);
         case {'.gii'} % GiFTi Surface
-            tmp = create_gifti_scan(scanInfo.boldFiles{i}, scanInfo.roiFile, ...
-                scanInfo.TR);
+            scan = create_gifti_scan(boldFile, roiFile, TR);
         otherwise
-            error('Unrecognized file extension: %s', ext);
+            error('Unrecognized bold data file extension: %s\n', ext);
     end
     
+    return
     %%% load stimulus information
-    switch stimImgMethod % load stimulus data
-        case 'paradigm' % specifying with paradigm sequence
-            scans(i) = create_stimulus_image(tmp, scanInfo, i, opt);
-        case 'stimImg' % extracting pre-made stimImg
-            scans(i) = extract_stimulus_image(tmp, scanInfo, i, opt);
-    end
+    stimFile = stimFiles{i};
+    [~,stimName,stimExt] = extract_fileparts(stimFile);
+    print_message('Loading: %s\n', [stimName stimExt]);
+    
+    stim = create_stimulus_image(scan, boldFiles, i);
+    
+    %%% save scan and stimulus information
+    protocol(i) = combine_scan_and_stim(scan, stim); 
 end

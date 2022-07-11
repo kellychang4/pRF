@@ -1,23 +1,12 @@
-function [scanInfo] = validate_create_scans(scanInfo)
+function validate_create_protocol(boldFiles, stimFiles, roiFile, varargin)
 
 %% Check File Existence
 
-%%% anatomical file
-error_field_exists(scanInfo, 'anatFile'); 
-error_files_exists(scanInfo.anatFile);
-
-%%% roi file
-error_field_exists(scanInfo, 'roiFile'); 
-error_files_exists(scanInfo.roiFile); 
-
-%%% bold files
-error_field_exists(scanInfo, 'boldFiles'); 
-error_files_exists(scanInfo.boldFiles); 
-
-%%% stimulus files
-error_field_exists(scanInfo, 'stimFiles'); 
-error_files_exists(scanInfo.stimFiles); 
-
+error_files_exists(anatFile);
+error_files_exists(roiFile); 
+error_files_exists(boldFiles); 
+error_files_exists(stimFiles); 
+return
 %% 
 
 if ischar(scanInfo.boldFiles)

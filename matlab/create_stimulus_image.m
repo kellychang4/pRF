@@ -1,29 +1,26 @@
-function [scan] = create_stimulus_image(scan, scanOpt, nScan, opt)
-% [scan] = create_stimulus_image(scan, scanOpt, nScan, opt)
+function [scan] = extract_stimulus_image(scan, scanOpt, nScan, opt)
+% [scan] = extract_stimulus_image(scan, scanOpt, nScan, opt)
 %
-% Creates a MxNi stimulus image where M is the number of volumes in the scan
-% (time progresses down the y-axis) and Ni is the length of unique units of
+% Extracts a MxN stimulus image where M is the number of volumes in the scan
+% (time progresses down the y-axis) and N is the length of unique units of 
 % the stimulus. 1s in the matrix indicate when and which stimulus was 
-% presented depending on the row (when, volume number) and column (which,
+% presented depending on the row (when, volume number) and column (which, 
 % stimulus index)
 %
 % Inputs:
 %   scan                  A stucture containing information about the
-%                         scan(s), MUST include fields:
-%       paradigm          A structure containing the stimulus paradigm
-%                         sequences for each stimulus dimension as field
-%                         names:
-%           <model        Stimulus paradigm sequence, given in units that
-%             funcOf>     are to estimated, blanks should be coded as NaNs,
-%                         numeric
-%       k                 A structure containing the unique units of the
-%                         given stimulus dimension as field names:
-%           <model        A vector containing the unique units of the given
-%             funcOf>     stimulus dimension
-%                         (i.e., unique(paradigm(~isnan(paradigm))) )
-%       nVols             Number of volumes in the scan
-%   opt                   Options for creating the stimulus image with
-%                         fields:
+%                         scan(s):
+%   scanOpt               A structure containing option to create the
+%                         'scan' structure, MUST include field:
+%       stimImg           Name of the stimulus image variable within the
+%                         paradigm file(s), string
+%       dt                Time step size, numeric (default:
+%                         scan.dur/size(stimImg,1))
+%   nScan                 Scan number within 'scanOpt'
+%   opt                   A structure containing options for pRF model
+%                         fitting, MUST include field:
+%       model             Model name, also the function name to be fitted,
+%                         string
 %
 % Outputs:
 %   scan                  The same 'scan' structure, but with additional
@@ -32,75 +29,70 @@ function [scan] = create_stimulus_image(scan, scanOpt, nScan, opt)
 %                         outputed 'scan' structure MUST include the
 %                         following fields:
 %       <model funcOf>    The unique units of the given stimulus
-%       stimImg           A MxN matrix where M is the number of instances
-%                         of the paradigm as specified by the paradigm
-%                         sequence for the particular scan and N is the
+%       stimImg           A M x Ni x ... x Nn matrix where M is the number
+%                         of volumes of the scan and Ni through Nn is the
 %                         length(scan.<funcOf>) or the desired resolution
-%                         of the stimulus image
+%                         of the stimulus image for each stimulus dimension
 %
 % Note:
-% - scan.paradigm.<funcOf> MUST be specified in the units that will
-% eventually be estimated for the pRF model
+% - The stimulus image can be visualized with imagesc(scan.stimImg)
 
-% Written by Kelly Chang - June 21, 2016
+% Written by Kelly Chang - March 29, 2017
 % Edited by Kelly Chang - July 19, 2017
 
-%% Interpolate Up Sampled Stimulus Resolution
+%% Error Checking
 
-[~,file,ext] = fileparts(scanOpt.matPath{nScan}); 
-scan.matFile = [file ext]; % name of .mat file
-
-funcOf = getfield(eval(opt.model), 'funcOf');
-load(scanOpt.matPath{nScan}); % load paradigm file
-for i = 1:length(funcOf)
-    scan.paradigm.(funcOf{i}) = eval(['[' scanOpt.paradigm.(funcOf{i}) ']']);
-    scan.k.(funcOf{i}) = unique(scan.paradigm.(funcOf{i})(~isnan(scan.paradigm.(funcOf{i}))));    
-    scan.funcOf.(funcOf{i}) = scan.k.(funcOf{i});
+funcVars = getfield(feval(opt.model), 'funcOf'); % <funcOf> variables
+if ~all(ismember(funcVars, scanOpt.order))
+    errFlds = funcVars(~ismember(funcVars, scanOpt.order));
+    error('Missing ''scanOpt.order'' for these ''funcOf'' variable(s): %s', strjoin(errFlds, ', '));
 end
 
-%% Error Check
-
-if length(unique(structfun(@length, scan.paradigm))) > 1
-    errs = cellfun(@(x,y) sprintf('%s (%d)',x,y), fieldnames(scan.paradigm), ...
-    num2cell(structfun(@length, scan.paradigm)), 'UniformOutput', false);
-    error('Given paradigm sequences mismatch in length:\n\t%s', ...
-        strjoin(errs, '\n\t'));
+if ~ismember('nVols', scanOpt.order)
+    error('Missing ''nVols'' when defining ''scanOpt.order''');
 end
 
-%% Calculate Stimulus Image / Paradigm Time Sampling Rate (dt)
+%% Extract Stimulus Image
 
-scan.dt = scan.dur/length(scan.paradigm.(funcOf{1}));
+scan.matFile = filename(scanOpt.stimFiles{nScan}); % name of .mat file
 
-%% Create Stimulus Image
+indx = cellfun(@(x) find(strcmp(['nVols' funcVars],x)), scanOpt.order);
 
-stimImg = eval(['zeros(length(scan.paradigm.(funcOf{1})),', ...
-    sprintf('length(scan.funcOf.%s)', strjoin(funcOf, '),length(scan.funcOf.')) ');']);
-for i = 1:size(stimImg,1) % for each paradigm instance
-    if ~isnan(scan.paradigm.(funcOf{1})(i))
-        tmp = arrayfun(@num2str, cellfun(@(x) find(scan.funcOf.(x)==scan.paradigm.(x)(i)), ...
-            funcOf), 'UniformOutput', false);
-        eval(sprintf('stimImg(%d,%s)=1;', i, strjoin(tmp, ',')));
-    end
-end
+m = load(scanOpt.stimFiles{nScan}); % load .mat file
+stimImg = m.(scanOpt.stimImg);    % assign stimulus image
+stimImg = permute(stimImg, indx); % reorder stimulus image
+stimSize = size(stimImg);
+
 scan.stimImg = stimImg;
+
+%% Extract Stimulus Dimensions
+
+if isfield(scanOpt, 'funcOf')
+    funcOf = m.(scanOpt.funcOf); % assign funcOf variable
+    
+    %%% calculate stimulus timing
+    scan.dt = funcOf.t(2) - funcOf.t(1);
+    
+    for i = 1:length(funcVars) % for each dimension
+        scan.funcOf.(funcVars{i}) = funcOf.(funcVars{i});
+    end
+else % not given
+    
+    %%% stimulus timing
+    scan.dt = scan.dur / stimSize(1); % seconds per frame
+    
+    for i = 1:length(funcVars)
+        scan.funcOf.(funcVars{i}) = 1:stimSize(i+1);
+    end
+    
+end
+
+% if stimulus timing given, override manual calculations
+if isfield(scanOpt, 'dt'); scan.dt = scanOpt.dt; end
 
 %% Meshgrid 'funcOf' Parameters for Models with more than 1 Dimension
 
-if length(funcOf) > 1
-    eval(sprintf('[scan.funcOf.%1$s]=meshgrid(scan.funcOf.%1$s);', ...
-        strjoin(funcOf, ',scan.funcOf.')));
+if length(funcVars) > 1 && ~isequal(size(scan.funcOf.(funcVars{1})), size(scan.stimImg,2:3))
+   eval(sprintf('[scan.funcOf.%1$s]=meshgrid(scan.funcOf.%1$s);', ...
+       strjoin(funcVars, ',scan.funcOf.')));
 end
-
-%% Error Check
-
-if ~all(ismember(funcOf, fieldnames(scan.funcOf)))
-    errFlds = setdiff(funcOf, fieldnames(scan.funcOf));
-    error('createStimImg did not create %s() field(s) for ''scan'' structure: %s', ...
-        opt.model, strjoin(errFlds, ', '));
-end
-
-%% Organize Output
-
-scan = orderfields(scan, {'matFile', 'paradigm', 'k', 'funcOf', ...
-    'boldFile', 'boldSize', 'nVols', 'dur', 'TR', 'dt', 't', ...
-    'voxID', 'vtc', 'stimImg'});
