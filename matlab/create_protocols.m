@@ -5,10 +5,6 @@ function [protocols] = create_protocols(boldFiles, stimFiles, roiFile, options)
 % by the corresponding 'scanInfo.boldFiles' and 'scanInfo.roiFile' through
 % one of two methods
 %
-% METHOD 1: PARADIGM
-% Will create a 'scans' structure based on the given
-% 'scanInfo.paradigm.<funcOf>' sequence(s), will create a stimulus image
-% from the given paradigm sequence(s)
 %
 % METHOD 2: STIMULUS IMAGE
 % Will create a 'scans' structre based on pre-defined stimulus image(s)
@@ -96,8 +92,7 @@ end
 
 set_global_with_protocol_information(boldFiles{1});
 
-%% Creating 'protocol' Structure
-
+%% Create 'protocol' Structure
 
 n = length(boldFiles);
 protocols = initialize_protocol(n);
