@@ -1,5 +1,5 @@
-function [scan] = extract_stimulus_image(scan, scanOpt, nScan, opt)
-% [scan] = extract_stimulus_image(scan, scanOpt, nScan, opt)
+function [stim] = create_stimulus_image(stimFile, options)
+% [stim] = create_stimulus_image(stimFile, options)
 %
 % Extracts a MxN stimulus image where M is the number of volumes in the scan
 % (time progresses down the y-axis) and N is the length of unique units of 
@@ -39,60 +39,21 @@ function [scan] = extract_stimulus_image(scan, scanOpt, nScan, opt)
 
 % Written by Kelly Chang - March 29, 2017
 % Edited by Kelly Chang - July 19, 2017
+% Edited by Kelly Chang - July 11, 2022
 
-%% Error Checking
+%% Extract Stimulus Image to Create 'stim' Structure
 
-funcVars = getfield(feval(opt.model), 'funcOf'); % <funcOf> variables
-if ~all(ismember(funcVars, scanOpt.order))
-    errFlds = funcVars(~ismember(funcVars, scanOpt.order));
-    error('Missing ''scanOpt.order'' for these ''funcOf'' variable(s): %s', strjoin(errFlds, ', '));
-end
+%%% read source stimulus information
+m = load(stimFile); % load .mat file
+stimImg = m.(options.stimImg); % assign stimulus image variable
+funcOf = m.(options.funcOf);   % assign function of variable
 
-if ~ismember('nVols', scanOpt.order)
-    error('Missing ''nVols'' when defining ''scanOpt.order''');
-end
+%%% validation / error checking
+validate_funcof(stimImg, funcOf); 
 
-%% Extract Stimulus Image
-
-scan.matFile = filename(scanOpt.stimFiles{nScan}); % name of .mat file
-
-indx = cellfun(@(x) find(strcmp(['nVols' funcVars],x)), scanOpt.order);
-
-m = load(scanOpt.stimFiles{nScan}); % load .mat file
-stimImg = m.(scanOpt.stimImg);    % assign stimulus image
-stimImg = permute(stimImg, indx); % reorder stimulus image
-stimSize = size(stimImg);
-
-scan.stimImg = stimImg;
-
-%% Extract Stimulus Dimensions
-
-if isfield(scanOpt, 'funcOf')
-    funcOf = m.(scanOpt.funcOf); % assign funcOf variable
-    
-    %%% calculate stimulus timing
-    scan.dt = funcOf.t(2) - funcOf.t(1);
-    
-    for i = 1:length(funcVars) % for each dimension
-        scan.funcOf.(funcVars{i}) = funcOf.(funcVars{i});
-    end
-else % not given
-    
-    %%% stimulus timing
-    scan.dt = scan.dur / stimSize(1); % seconds per frame
-    
-    for i = 1:length(funcVars)
-        scan.funcOf.(funcVars{i}) = 1:stimSize(i+1);
-    end
-    
-end
-
-% if stimulus timing given, override manual calculations
-if isfield(scanOpt, 'dt'); scan.dt = scanOpt.dt; end
-
-%% Meshgrid 'funcOf' Parameters for Models with more than 1 Dimension
-
-if length(funcVars) > 1 && ~isequal(size(scan.funcOf.(funcVars{1})), size(scan.stimImg,2:3))
-   eval(sprintf('[scan.funcOf.%1$s]=meshgrid(scan.funcOf.%1$s);', ...
-       strjoin(funcVars, ',scan.funcOf.')));
-end
+%%% save stimulus information in 'stim' output
+stim.stimFile = stimFile;
+stim.funcOf = rmfield(funcOf, 't');
+stim.dt = funcOf.t(2) - funcOf.t(1); 
+stim.t = funcOf.t(:); 
+stim.stimImg = stimImg;

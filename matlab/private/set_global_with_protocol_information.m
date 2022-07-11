@@ -1,8 +1,8 @@
-function set_global_with_protocol_information(scanInfo)
+function set_global_with_protocol_information(boldFile)
 
 global GLOBAL_PARAMETERS; % declare global variable
 
-[~,~,ext] = extract_fileparts(scanInfo.anatFile);
+[~,~,ext] = extract_fileparts(boldFile);
 
 %%% prf parameters (based on anatomical file extension)
 switch ext

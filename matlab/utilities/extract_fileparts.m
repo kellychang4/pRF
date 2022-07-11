@@ -1,5 +1,5 @@
-function [fpath,name,ext] = extract_fileparts(fileName)
-% [filePath,name,ext] = EXTRACT_FILEPARTS(fileName)
+function [fpath,name,ext] = extract_fileparts(filename)
+% [filePath,name,ext] = EXTRACT_FILEPARTS(filename)
 % 
 % Extracts the given file name's path, base name, and extension including
 % compression extensions (e.g., '.gz', '.zip').
@@ -26,8 +26,8 @@ function [fpath,name,ext] = extract_fileparts(fileName)
 
 %% Extract File Parts
 
-charFlag = ischar(fileName); 
-[fpath,name,ext] = fileparts(fileName);
+charFlag = ischar(filename); 
+[fpath,name,ext] = fileparts(filename);
 
 if charFlag; fpath = {fpath}; name = {name}; ext = {ext}; end
 

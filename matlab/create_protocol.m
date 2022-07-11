@@ -1,5 +1,5 @@
-function [protocol] = create_protocol(boldFiles, stimFiles, roiFile, varargin)
-% [scans] = create_protocol(scanInfo)
+function [protocols] = create_protocols(boldFiles, stimFiles, roiFile, options)
+% [scans] = create_protocol(boldFiles, stimFiles, roiFile, options)
 %
 % Creates a structure 'scans' containing information about the scan(s) given
 % by the corresponding 'scanInfo.boldFiles' and 'scanInfo.roiFile' through
@@ -9,12 +9,12 @@ function [protocol] = create_protocol(boldFiles, stimFiles, roiFile, varargin)
 % Will create a 'scans' structure based on the given
 % 'scanInfo.paradigm.<funcOf>' sequence(s), will create a stimulus image
 % from the given paradigm sequence(s)
-% 
+%
 % METHOD 2: STIMULUS IMAGE
 % Will create a 'scans' structre based on pre-defined stimulus image(s)
 %
 % Inputs:
-%   scanInfo                 A structure containing option to create the
+%   protocolFiles            A structure containing option to create the
 %                            'scans' structure with fields:
 %       boldFiles            Path(s) to all BOLD files(s), string
 %       stimFiles            Path(s) to all stimulus/ protocol files, string
@@ -29,7 +29,7 @@ function [protocol] = create_protocol(boldFiles, stimFiles, roiFile, varargin)
 %                            scan.dur/size(stimImg,1))
 %       order                Order of the stimulus image dimensions
 %                            (default: [nVolumes <opt.model's funcOf>])
-%       funcOf               A structure containing the stimulus function 
+%       funcOf               A structure containing the stimulus function
 %                            of dimension range as fields
 %
 % Output:
@@ -52,7 +52,7 @@ function [protocol] = create_protocol(boldFiles, stimFiles, roiFile, varargin)
 %       funcOf               A structure containing the actual function of
 %                            parameters as matrices scan given the model as
 %                            fields:
-%           <funcOf          Full function of stimulus values for each 
+%           <funcOf          Full function of stimulus values for each
 %             parameters>    stimulus dimension, meshgrid applied if
 %                            multiple funcOf parameters
 %       boldFile             Name of the BOLD file, string
@@ -65,11 +65,11 @@ function [protocol] = create_protocol(boldFiles, stimFiles, roiFile, varargin)
 %                            seconds
 %       t                    Time vector of the scan in TRs, seconds
 %       voxID                Voxel index number
-%       vtc                  Voxel time course 
+%       vtc                  Voxel time course
 %       stimImg              A M x Ni x ... x Nn matrix where M is the
 %                            number of volumes of the scan and Ni through
 %                            Nn is the length(scan.paradigm.<funcOf>) or
-%                            the desired resolution of the stimulus image 
+%                            the desired resolution of the stimulus image
 %                            for each stimulus dimension
 %
 % Note:
@@ -80,43 +80,57 @@ function [protocol] = create_protocol(boldFiles, stimFiles, roiFile, varargin)
 % Edited by Kelly Chang - September 1, 2017
 % Edited by Kelly Chang - July 8, 2022
 
-%% Validate Function Arguments
+arguments
+    %%% required arguments
+    boldFiles cell {mustBeText, validate_files(boldFiles), validate_bold_ext(boldFiles)}
+    stimFiles cell {mustBeText, validate_files(stimFiles), validate_equal_size(boldFiles, stimFiles)}
+    roiFile (1,:) char {mustBeFile} 
+    
+    %%% conditional arguments
+    options.TR (1,1) double {validate_gifti_tr(boldFiles, options.TR), validate_tr(options.TR)} = NaN
+    
+    %%% optional arguments
+    options.stimImg (1,:) char {mustBeTextScalar} = 'stimImg'
+    options.funcOf  (1,:) char {mustBeTextScalar} = 'funcOf'
+end
 
-validate_create_protocol(boldFiles);
-set_global_with_protocol_information(boldFiles);
+set_global_with_protocol_information(boldFiles{1});
 
 %% Creating 'protocol' Structure
 
-n = length(boldFiles); 
-protocol = initialize_protocol(n);
+
+n = length(boldFiles);
+protocols = initialize_protocol(n);
 
 for i = 1:n % for each bold file
     
     %%% load bold information
     boldFile = boldFiles{i};
     [~,boldName,boldExt] = extract_fileparts(boldFile);
-    print_message('Loading: %s\n', [boldName boldExt]); 
+    print_message('Loading: %s\n', [boldName boldExt]);
     
     switch boldExt % bold data format
         case {'.vtc'} % BrainVoyager Volumetric
-            scan = create_brainvoyager_scan(boldFile, roiFile);
+            error('BrainVoyager WIP');
+            %             scan = create_brainvoyager_scan(boldFile, roiFile);
         case {'.nii', '.nii.gz'} % FreeSurfer Volumetric
-            % (!!!) this needs editing
-            scan = create_freesurfer_scan(boldFile, roiFile);
+            error('BrainVoyager WIP');
+            %             scan = create_freesurfer_scan(boldFile, roiFile);
         case {'.gii'} % GiFTi Surface
-            scan = create_gifti_scan(boldFile, roiFile, TR);
+            scan = create_gifti_scan(boldFile, roiFile, options.TR);
         otherwise
             error('Unrecognized bold data file extension: %s\n', ext);
     end
     
-    return
     %%% load stimulus information
     stimFile = stimFiles{i};
     [~,stimName,stimExt] = extract_fileparts(stimFile);
     print_message('Loading: %s\n', [stimName stimExt]);
     
-    stim = create_stimulus_image(scan, boldFiles, i);
+    stim = create_stimulus_image(stimFile, options);
     
     %%% save scan and stimulus information
-    protocol(i) = combine_scan_and_stim(scan, stim); 
+    protocols(i) = combine_scan_and_stim(scan, stim);
+end
+
 end
