@@ -36,11 +36,11 @@ function [scan] = create_gifti_scan(boldFile, roiFile, TR)
 bold = gifti(boldFile); % load .gii file
 tc = permute(bold.cdata, [2 1]); % reverse dimensions to [nt nv]
 vertices = readLabels(roiFile);  % read label ROI file
-[~,fname,ext] = extract_fileparts(boldFile);
 
 %%% save scan information in 'scan' output
-scan.boldFile = [fname ext]; % name of bold data file
-scan.boldSize = size(tc); % size of the bold data
-scan.t = (0:(size(tc,1)-1)) .* TR; % time vector, seconds
+scan.file = filename(boldFile); % name of bold data file
+scan.size = size(tc); % size of the bold data
+scan.dt = TR; % repetition time, seconds
+scan.t = (0:(size(tc,1)-1)) .* scan.dt; % time vector, seconds
 scan.vertex = vertices(:)'; % vertex indices
 scan.vtc = tc(:,vertices); % extract time course of vertices

@@ -52,7 +52,7 @@ funcOf = m.(options.funcOf);   % assign function of variable
 validate_funcof(stimImg, funcOf); 
 
 %%% save stimulus information in 'stim' output
-stim.stimFile = stimFile;
+stim.file = filename(stimFile);
 stim.funcOf = rmfield(funcOf, 't');
 stim.dt = funcOf.t(2) - funcOf.t(1); 
 stim.t = funcOf.t(:); 

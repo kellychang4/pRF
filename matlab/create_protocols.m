@@ -125,7 +125,7 @@ for i = 1:n % for each bold file
     stim = create_stimulus_image(stimFile, options);
     
     %%% save scan and stimulus information
-    protocols(i) = combine_scan_and_stim(scan, stim);
+    protocols(i) = combine_scan_and_stim(scan, stim, roiFile);
 end
 
 end
