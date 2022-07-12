@@ -1,5 +1,5 @@
-function [flag] = openParallel(flag)
-% [flag] = openParallel(flag)
+function [flag] = open_parallel(flag)
+% [flag] = open_parallel(flag)
 %
 % Opens all available parallel cores, if there are parallel cores to open.
 % If there are no parallel cores to open, will return flag as false.
