@@ -8,8 +8,6 @@ function [hrf] = hrf_twogamma(params,t)
 %
 %
 % Inputs:
-%   <No Arg>      No arguments, will return a cell array containing the 
-%                 required field names for 'params'
 %   params
 %       delta     Onset, seconds (default: 0)
 %       c         Response undershoot ratio (default: 6)
@@ -31,45 +29,11 @@ function [hrf] = hrf_twogamma(params,t)
 %   and mis-modeling. Neuroimage, 45(1), S187-S198.
 
 % Written by Kelly Chang - June 20, 2017
-
-%% Input Control
-
-if ~exist('params', 'var')
-    params = struct();
-end
-
-if ~isfield(params, 'delta')
-    params.delta = 0;
-end
-
-if ~isfield(params, 'c')
-    params.c = 6;
-end
-
-if ~isfield(params, 'a1')
-    params.a1 = 6;
-end
-
-if ~isfield(params, 'a2')
-    params.a2 = 16;
-end
-
-if ~isfield(params, 'b1')
-    params.b1 = 1;
-end
-
-if ~isfield(params, 'b2')
-    params.b2 = 1;
-end
+% Edited by Kelly Chang - July 14, 2022
 
 %% Two Gamma HRF
 
-
-if nargin < 1
-    hrf = {'delta', 'c', 'a1', 'a2', 'b1', 'b2'};
-else
-    t = t - params.delta;
-    hrf = ((t.^(params.a1-1).*params.b1^(params.a1).*exp(-params.b1.*t)) / gamma(params.a1)) - ...
-        ((t.^(params.a2-1).*params.b2^(params.a2).*exp(-params.b2.*t)) / (params.c*gamma(params.a2)));
-    hrf(t < 0) = 0;
-end
+t = t - params.delta;
+hrf = ((t.^(params.a1 - 1) .* params.b1.^(params.a1) .* exp(-params.b1 .* t)) ./ gamma(params.a1)) - ...
+    ((t.^(params.a2 - 1) .* params.b2 .^ (params.a2) .* exp(-params.b2 .* t)) / (params.c .* gamma(params.a2)));
+hrf(t < 0) = 0;

@@ -1,4 +1,4 @@
-function [flag] = open_parallel(flag)
+function open_parallel()
 % [flag] = open_parallel(flag)
 %
 % Opens all available parallel cores, if there are parallel cores to open.
@@ -16,22 +16,20 @@ function [flag] = open_parallel(flag)
 
 % Written by Kelly Chang - July 19, 2016
 
-%% Input Control
-
-if ~exist('flag', 'var')
-    flag = false;
-end
-
 %% Open Parallel Cores
 
-if flag
-    try
+parallelFlag = get_global_variables('fit.parallel');
+
+if parallelFlag 
+    try % try to open parallel pool
         p = gcp('nocreate'); % check for pool information
         if isempty(p) % if no pool is currently open
             % open all cores on default cluster
-            parpool(parallel.defaultClusterProfile, p.NumWorkers);
+            c = parcluster(parallel.defaultClusterProfile);
+            parpool(parallel.defaultClusterProfile, c.NumWorkers);
         end
     catch ME % if there is no parallel pools available
-        flag = false; % reset flag to be false
+        delete(gcp('nocreate')); % delete all parallel pools
+        set_global_variables('fit.parallel', false);
     end
 end
