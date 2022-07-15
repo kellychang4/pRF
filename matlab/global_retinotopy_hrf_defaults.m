@@ -13,12 +13,13 @@ GLOBAL_PARAMETERS.hrf.fit = true;
 GLOBAL_PARAMETERS.hrf.model = 'Two Gamma';
 GLOBAL_PARAMETERS.hrf.free = {'delta', 'c', 'a1', 'a2', 'b1', 'b2'};
 GLOBAL_PARAMETERS.hrf.thr  = 0.45; 
-GLOBAL_PARAMETERS.hrf.nmax = 2000; 
+GLOBAL_PARAMETERS.hrf.pmin = 0.15; 
+GLOBAL_PARAMETERS.hrf.pmax = 1/3;
 
 %%% fit procedure parameters
-GLOBAL_PARAMETERS.fit.error = 'Pearson';
+GLOBAL_PARAMETERS.fit.corr = 'Pearson'; % !!!, current not implemented
 GLOBAL_PARAMETERS.fit.parallel = true;
 
 %%% printing parameter
 GLOBAL_PARAMETERS.print.quiet = false;
-GLOBAL_PARAMETERS.print.nunits = 1000; 
+GLOBAL_PARAMETERS.print.nunit = 1000; 

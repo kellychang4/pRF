@@ -1,14 +1,21 @@
-function [opt] = get_global_variables(varargin)
+function [varargout] = get_global_variables(varargin)
 
 global GLOBAL_PARAMETERS;
+sprintfEval = @(x) sprintf('GLOBAL_PARAMETERS.%s',x); 
 
-switch nargin
-    case 1
-        opt = eval(sprintf('GLOBAL_PARAMETERS.%s', varargin{1})); 
-    otherwise
-        outFld = cellfun(@fld2var, varargin, 'UniformOutput', false);
-        for i = 1:nargin % for each argument
-            evalStr = sprintf('GLOBAL_PARAMETERS.%s', varargin{i});
-            opt.(outFld{i}) = eval(evalStr);
-        end
+if nargin == nargout
+    varargout = cell(1, nargout); 
+    for i = 1:nargout
+        varargout{i} = eval(sprintfEval(varargin{i}));
+    end
+elseif nargin > 1 && nargout == 1
+    %%% assign all inputs to field of output variable
+    outFld = cellfun(@fld2var, varargin, 'UniformOutput', false);
+    for i = 1:nargin % for each argument
+        varargout{1}.(outFld{i}) = eval(sprintfEval(varargin{i}));
+    end
 end
+        
+   
+        
+   

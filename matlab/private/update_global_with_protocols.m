@@ -1,4 +1,4 @@
-function set_global_with_protocol_information(boldFile)
+function update_global_with_protocols(boldFile)
 
 global GLOBAL_PARAMETERS; % declare global variable
 
@@ -11,12 +11,5 @@ switch ext
         GLOBAL_PARAMETERS.prf.unit = 'voxel';
     case {'.srf', '.gii'}
         GLOBAL_PARAMETERS.prf.space = 'surface';
-        GLOBAL_PARAMETERS.prf.units = 'vertex';
+        GLOBAL_PARAMETERS.prf.unit = 'vertex';
 end
-
-return
-%% Set Global Variables
-
-%%% stimulus / protocol parameters
-GLOBAL_PARAMETERS.stim.type = 'image'; % protocol
-GLOBAL_PARAMETERS.stim.dt = NaN; % time step, seconds
