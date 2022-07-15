@@ -1,4 +1,4 @@
-function [params,err] = fitcon(funName, params, freeList, varargin)
+function [params,err] = fitcon(errorFunc, params, freeList, varargin)
 % [params,err] = fitcon(funName, params, freeList, var1, var2, var3, ...)
 %
 % Helpful interface to matlab's 'fmincon' function.
@@ -34,6 +34,7 @@ function [params,err] = fitcon(funName, params, freeList, varargin)
 % Written by Geoffrey M. Boynton, 9/26/14
 % Adapted from 'fit.m' written by gmb in the summer of '00
 % Edited by Kelly Chang, February 10, 2017
+% Edited by Kelly Chang, July 15, 2022
 
 %% Input Control
 
@@ -54,10 +55,11 @@ end
 [vars,lb,ub,varList] = params2varcon(params, freeList);
 
 % call non-linear optimization fitting
-vars = fminsearchcon('fitFunction',vars,lb,ub,[],[],[],options,funName,params,varList,varargin);
+vars = fminsearchcon('fit_function', vars, lb, ub, [], [], [], options, ...
+    errorFunc, params, varList, varargin);
 
 % assign final parameters into 'params'
 params = var2params(vars, params, varList);
 
-% evaluate the function 'funName' for error at minimum
-err = fitFunction(vars, funName, params, varList, varargin);
+% evaluate the function 'errorFunc' for error at minimum
+err = fit_function(vars, errorFunc, params, varList, varargin);

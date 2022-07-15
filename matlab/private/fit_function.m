@@ -1,5 +1,5 @@
-function [err] = fitFunction(vars, funName, params, freeList, origVarargin)
-% [err] = fitFunction(var, funName, params, freeList, origVarargin)
+function [err] = fit_function(vars, errorFunc, params, freeList, origVarargin)
+% [err] = fit_function(vars, funName, params, freeList, origVarargin)
 %
 % Support function for 'fitcon.m'
 %
@@ -25,4 +25,4 @@ function [err] = fitFunction(vars, funName, params, freeList, origVarargin)
 params = var2params(vars, params, freeList);
 
 % evaluate the error function
-err = double(feval(funName, params, origVarargin{:}));
+err = double(errorFunc(params, origVarargin{:}));

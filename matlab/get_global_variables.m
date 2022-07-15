@@ -1,7 +1,7 @@
 function [varargout] = get_global_variables(varargin)
 
 global GLOBAL_PARAMETERS;
-sprintfEval = @(x) sprintf('GLOBAL_PARAMETERS.%s',x); 
+sprintfEval = @(x) sprintf('GLOBAL_PARAMETERS.%s', x); 
 
 if nargin == nargout
     varargout = cell(1, nargout); 
