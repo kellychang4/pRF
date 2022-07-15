@@ -1,4 +1,4 @@
-function [collated] = estimate_hrf(scans, seeds, hrf, opt)
+function [collated] = estimate_hrf(protocols, seeds)
 % [collated] = estimate_hrf(scans, seeds, hrf, opt)
 %
 % Estimates the hrf model given the scan, seeds, hrf, and options
@@ -18,76 +18,38 @@ function [collated] = estimate_hrf(scans, seeds, hrf, opt)
 
 % Written by Kelly Chang - June 29, 2022
 
+% arguments 
+%     protocols (1,:) struct {validate_protocols(protocols)} 
+%     seeds     (1,:) struct {validate_seeds(seeds)}
+% end
+
 %% Global Variables
 
-% update_global_variables(scans, seeds);
-% freeParams = get_global_variable('prf');
+set_global_model_parameters();
+% UNIT = get_global_variables('prf.unit');
+UNIT = 'vertex';
 
-%% Validate Input Arguments
+%% Open Parallel Core 
 
-validate_estimate_hrf(); 
+open_parallel(); % open parallel cores
 
-%% Open Parallel Cores
-
-opt.parallel = openParallel(opt.parallel);
-
-%% Create Predicted BOLD Response for Each Seed
+%% Calculate Predicted Response for Each Seed
 
 tic();
-opt.startTime = datestr(now);
-fprintf('Calculating Predicted Response for Each Seed\n');
-for i = 1:length(scans) % for each scan
-    %%% generate prf models from prf parameter seeds
-    for i2 = 1:length(seeds) % for each seed
-        seedModel = PRF_MODEL(seeds(i2), scans(i).funcOf); 
-        scans(i).seedModel(:,i2) = ascol(seedModel); % pRF model for each seed
-    end
-    
-    %%% collapse scan stimulus image
-    scans(i).stimImg = reshape(scans(i).stimImg, size(scans(i).stimImg,1), []); 
-    
-    %%% multiply stimulus with seed prfs
-    scans(i).modelResp = scans(i).stimImg * scans(i).seedModel; 
-    
-    %%% (optional) raise to compressive spatial summation exponent
-    if opt.CSS; scans(i).modelResp = bsxfun(@power, scans(i).modelResp, [seeds.exp]); end
-        
-    %%% convolve seed responses with hrf
-    scans(i).convSeed = create_convolved_response(scans(i), hrf); 
-end
+startTime = datestr(now);
 
-%% Calculating Best Seeds
+fprintf('Calculating Predicted Response for Each Seed...\n');
+seedResp = calculate_seed_response(protocols, seeds);
+% save('seedResp.mat', 'seedResp'); 
+load('seedResp.mat', 'seedResp'); 
 
-fprintf('Calculating Best Seeds for Each %s\n', captialize(UNIT));
+fprintf('Calculating Best Seeds for Each %s...\n', capitalize(UNIT));
+bestSeed = initialize_best_seed(protocols, seedResp);
+tic;
+bestSeed = calculate_best_seed(bestSeed); toc;
+save('bestSeed.mat', 'bestSeed'); 
 
-% initialize_best_seed, not finished, needs to use global variables
-bestSeed = initialize_best_seed(freeParams, labels, nv); % initialize
-parfor i = 1:nv % for each voxel or vertex
-    if ~opt.quiet && opt.parallel
-        parallelProgressBar(nv, 'Calculating Best Seeds');
-    elseif ~opt.quiet && mod(i,floor(nv/10)) == 0 % display voxel count every 10th of voxels
-        fprintf('Calculating Best Seed: Voxel %d of %d\n', i, nv);
-    end
-    
-    %%% find best seeds to intialize HRF fitting
-    seedMat = NaN(length(scans), length(seeds)); % initialize predicted seeds matrix
-    for i2 = 1:length(scans) % for each scan
-        seedMat(i2,:) = call_correlation(opt.corr, scans(i2).vtc(:,i), ...
-            scans(i2).convResp, scans(i2));
-    end
-    seedMat = mean(seedMat,1); % average across scan
-    [bestCorr,bestIndx] = max(seedMat); % find best seeds
-    
-    %%% save best seed parameters
-    bestSeed(i).seedId = bestIndx;
-    for i2 = 1:length(freeParams) % for each parameter
-        bestSeed(i).(freeParams{i2}) = seeds(bestIndx).(freeParams{i2});
-    end
-    bestSeed(i).corr = bestCorr;
-end
-if ~opt.quiet && opt.parallel % clean up parallel progress bar
-    parallelProgressBar(-1, 'Calculating Best Seed');
-end
+return
 
 %% Subset Voxel / Vertices to Use for HRF Fitting
 
@@ -118,7 +80,7 @@ end
 %% Fitting pRF Model (and Estimating HRF)
 
 fprintf('Estimating HRF\n');
-fittedParams = fit_hrf(initParams, scans, opt);
+fittedParams = fit_hrf(initParams, protocols, opt);
 %     for i = 1:length(hrf.freeList) % calculate estimated parameters
 %         hrf.fit.(hrf.freeList{i}) = median([fittedParams.(hrf.freeList{i})], 'omitnan');
 %     end
