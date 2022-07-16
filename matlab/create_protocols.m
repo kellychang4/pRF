@@ -90,7 +90,7 @@ arguments
     options.funcOf  (1,:) char {mustBeTextScalar} = 'funcOf'
 end
 
-set_global_with_protocol_information(boldFiles{1});
+update_global_with_protocols(boldFiles{1});
 
 %% Create 'protocol' Structure
 

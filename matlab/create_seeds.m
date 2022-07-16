@@ -49,7 +49,7 @@ nSeeds = prod(structfun(@length, options));
 eval(sprintf('[options.%1$s]=ndgrid(options.%1$s);', ...
     strjoin(params, ',options.')));
 for i = 1:nSeeds % for each seed
-    for i2 = 1:length(params) % for each parameter
+    for i2 = 1:length(params) % for each parameter        
         seeds(i).(params{i2}) = options.(params{i2})(i);
     end
 end

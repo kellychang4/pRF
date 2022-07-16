@@ -1,4 +1,4 @@
-function [fitParams] = fit_hrf(initParams)
+function [fitParams] = fit_prf(initParams)
 % [fitParams] = fit_hrf(initParams)
 %
 % Returns a structure containing the best fitting parameters after an
@@ -24,34 +24,43 @@ function [fitParams] = fit_hrf(initParams)
 % Written by Kelly Chang - February 2, 2017
 % Edited by Kelly Chang - July 15, 2022
 
-%% Fit HRF
+%% Fit pRF
 
 fitParams = initParams;
-[parallelFlag,freeList] = get_global_variables('fit.parallel', 'hrf.free');
+nProtocol = get_global_variables('n.protocol'); 
+[parallelFlag,freeList] = get_global_variables('fit.parallel', 'prf.free');
 globalArgs = get_global_variables('prf.func', 'stim', 'funcof', ...
     'prf.css', 'dt.stim', 'hrf.func', 'hrf.tmax', 't.stim', 't.bold');
+
+hrfParams = initParams(1).hrf; % same hrf parameters for all units
+for i = 1:nProtocol % for each protocol
+    t = 0:globalArgs.dtStim(i):globalArgs.hrfTmax;
+    globalArgs.hrf{i} = globalArgs.hrfFunc(hrfParams, t);
+end
+
+%%
 
 switch parallelFlag
     case 0
         fprintf('crying\n'); 
     case 1
        
-        parfor i = 1:length(initParams) % for each unit
+       parfor i = 1:length(initParams) % for each unit
             fprintf('    Vertex %4d of %d\n', i, length(initParams)); 
             
             %%% clear previous fitting values
             fitParams(i).corr = NaN;
             
-            %%% separate hrf parameters and other information
-            params = initParams(i).hrf; % hrf parameters
+            %%% separate prf parameters and other information
+            params = initParams(i).prf; % prf parameters
             args = combine_structures(globalArgs, ...
-                rmfield(initParams(i), 'hrf'));  
+                rmfield(initParams(i), {'prf', 'hrf'}));  
             
             %%% call 'fitcon' on unit
-            [outParams,err] = fitcon(@error_hrf, params, freeList, args);
+            [outParams,err] = fitcon(@error_prf, params, freeList, args);
             
             %%% save fitted parameter outputs
-            fitParams(i).hrf = outParams;
+            fitParams(i).prf = outParams;
             fitParams(i).corr = -err; 
         end
 end
