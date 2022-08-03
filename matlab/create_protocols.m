@@ -71,13 +71,12 @@ arguments
     options.funcOf  (1,:) char {mustBeTextScalar} = 'funcOf'
 end
 
-%% Create 'protocol' Structure
+%% Create 'protocols' Structure
 
-n = length(boldFiles);
-protocols = initialize_protocol(n);
+n = length(boldFiles); 
+protocols = initialize_protocols(boldFiles{1}, n); 
 
 for i = 1:n % for each bold file
-    
     %%% load bold information
     boldFile = boldFiles{i};
     [~,boldName,boldExt] = extract_fileparts(boldFile);
@@ -85,11 +84,11 @@ for i = 1:n % for each bold file
     
     switch boldExt % bold data format
         case {'.vtc'} % BrainVoyager Volumetric
-            error('BrainVoyager Volume not yet implemented (WIP)');
-            %             scan = create_brainvoyager_scan(boldFile, roiFile);
-        case {'.nii', '.nii.gz'} % FreeSurfer Volumetric
-            error('FreeSurfer Volume not yet implemented (WIP)');
-            %             scan = create_freesurfer_scan(boldFile, roiFile);
+            %%% (!!!) create_brainvoyager_scan has not been checked
+            scan = create_brainvoyager_scan(boldFile, roiFile);
+        case {'.nii', '.nii.gz'} % NiFTi Volumetric
+            %%% (!!!) create_nifti_scan has not been checked
+            scan = create_nifti_scan(boldFile, roiFile);
         case {'.gii'} % GiFTi Surface
             scan = create_gifti_scan(boldFile, roiFile, options.TR);
         otherwise
@@ -103,9 +102,127 @@ for i = 1:n % for each bold file
     
     %%% create stimulus image from file
     stim = create_stimulus_image(stimFile, options);
-    
+
     %%% save scan and stimulus information
     protocols(i) = combine_scan_and_stim(scan, stim, roiFile);
 end
 
+end
+
+%% Helper Functions
+
+function [protocols] = initialize_protocols(boldFile, n)
+    flds = {
+        'roi_file', 'voxel_tal', 'voxel', 'vertex', ...
+        'bold_file', 'bold_size', 'bold_dt', 'bold_t', 'bold', ...
+        'stim_file', 'stim_funcof', 'stim_dt', 'stim_t', 'stim'
+    };
+
+    %%% fieldnames depend on functional data file format
+    if endsWith(boldFile, '.gii') % surface = vertex
+        flds = flds(~contains_regex(flds, 'voxel'));
+    else % volumetric = voxel fieldnames
+        flds = flds(~contains_regex(flds, 'vertex'));
+    end
+    
+    protocols = initialize_structure(n, flds); 
+end
+
+%%% create scan structure from brainvoyager vtc files
+function [scan] = create_brainvoyager_scan(boldFile, roiFile)
+    %%% read source bold data and roi indices
+    bold = xff(boldFile); % read .vtc file
+    roi  = xff(roiFile);  % read .roi file
+
+    %%% extract vtc within roi
+    vtc = VTCinVOI(bold, roi); % (!!!) indices might not be as indended 
+    
+    %%% save scan information in 'scan' output
+    scan.file = filename(boldFile); % name of bold data file
+    scan.size = size(bold.VTCData); % size of the vtc data
+    scan.dt = bold.TR ./ 1000; % repetition time, seconds
+    scan.t = (0:scan.size(1)-1) .* scan.dt; % time vector, seconds
+    
+    % (!!!) below this line, not checked code.
+    scan.voxel_tal = cat(1, vtc.index); % voxel index (functional space)
+    scan.voxel     = cat(1, vtc.id);    % voxel id number (linearized)
+    scan.vtc = cat(2, vtc.vtcData); % voxel time course
+end
+
+%%% create scan structure from nifti files
+function [scan] = create_nifti_scan(boldFile, roiFile)
+    %%% read source bold data and roi indices
+    bold = MRIread(boldFile); % load nifti file
+    tc = squeeze(bold.vol);   % coerce data to shape
+    tc = permute(tc, [ndims(tc) 1:(ndims(tc)-1)]); % bold time course
+    tc = reshape(tc, size(tc,1), []); % flatten dimensions
+    voxels = readLabels(roiFile);   % read .label ROI file
+    
+    %%% save scan information in 'scan' output
+    scan.file = filename(boldFile); % name of bold data file
+    scan.size = size(tc); % size of the bold data
+    scan.dt = bold.tr ./ 1000; % repetition time, seconds
+    scan.t = (0:(size(tc,1)-1)) .* scan.dt; % time vector, seconds
+    scan.voxel = voxels(:)'; % voxel indices
+    scan.vtc = tc(:,voxels); % extract time course of vertices
+end
+
+%%% create scan structure from gifti files
+function [scan] = create_gifti_scan(boldFile, roiFile, TR)
+    %%% read source bold data information
+    bold = gifti(boldFile); % load .gii file
+    tc = permute(bold.cdata, [2 1]); % reverse dimensions to [nt nv]
+    vertices = readLabels(roiFile);  % read .label ROI file
+    
+    %%% save scan information in 'scan' output
+    scan.file = filename(boldFile); % name of bold data file
+    scan.size = size(tc); % size of the bold data
+    scan.dt = TR; % repetition time, seconds
+    scan.t = (0:(size(tc,1)-1)) .* scan.dt; % time vector, seconds
+    scan.vertex = vertices(:)'; % vertex indices
+    scan.vtc = tc(:,vertices);  % extract time course of vertices
+end
+
+%%% create stim struture from stimulus files
+function [stim] = create_stimulus_image(stimFile, options)
+    %%% read source stimulus information
+    m = load(stimFile); % load .mat file
+    stimImg = m.(options.stimImg); % assign stimulus image variable
+    funcOf = m.(options.funcOf);   % assign function of variable
+
+    %%% validation / error checking
+    validate_funcof(stimImg, funcOf);
+
+    %%% save stimulus information in 'stim' output
+    stim.file = filename(stimFile);
+    stim.funcOf = rmfield(funcOf, 't');
+    stim.dt = funcOf.t(2) - funcOf.t(1);
+    stim.t = funcOf.t(:);
+    stim.stimImg = stimImg;
+end
+
+%%% combine scan and stimulus information into a protocol structure
+function [protocol] = combine_scan_and_stim(scan, stim, roiFile)
+    %%% roi information
+    protocol.roi_file = filename(roiFile); 
+    if isfield(scan, 'voxel')
+%         protocol.voxel_tal = 0; % (!!!) need to implement
+        protocol.voxel = scan.voxel(:)';
+    else % vertex
+        protocol.vertex = scan.vertex(:)'; 
+    end
+
+    %%% bold information
+    protocol.bold_file = char(scan.file);
+    protocol.bold_size = scan.size;
+    protocol.bold_dt = scan.dt;
+    protocol.bold_t = scan.t(:);
+    protocol.bold = scan.vtc;
+
+    %%% stimulus information
+    protocol.stim_file = char(stim.file); 
+    protocol.stim_funcof = stim.funcOf;
+    protocol.stim_dt = stim.dt;
+    protocol.stim_t = stim.t(:); 
+    protocol.stim = stim.stimImg;
 end
