@@ -90,8 +90,6 @@ arguments
     options.funcOf  (1,:) char {mustBeTextScalar} = 'funcOf'
 end
 
-update_global_with_protocols(boldFiles{1});
-
 %% Create 'protocol' Structure
 
 n = length(boldFiles);
@@ -102,14 +100,14 @@ for i = 1:n % for each bold file
     %%% load bold information
     boldFile = boldFiles{i};
     [~,boldName,boldExt] = extract_fileparts(boldFile);
-    print_message('Loading: %s\n', [boldName boldExt]);
+    fprintf('Loading: %s\n', [boldName boldExt]);
     
     switch boldExt % bold data format
         case {'.vtc'} % BrainVoyager Volumetric
-            error('BrainVoyager WIP');
+            error('BrainVoyager Volume not yet implemented (WIP)');
             %             scan = create_brainvoyager_scan(boldFile, roiFile);
         case {'.nii', '.nii.gz'} % FreeSurfer Volumetric
-            error('BrainVoyager WIP');
+            error('FreeSurfer Volume not yet implemented (WIP)');
             %             scan = create_freesurfer_scan(boldFile, roiFile);
         case {'.gii'} % GiFTi Surface
             scan = create_gifti_scan(boldFile, roiFile, options.TR);
@@ -120,8 +118,9 @@ for i = 1:n % for each bold file
     %%% load stimulus information
     stimFile = stimFiles{i};
     [~,stimName,stimExt] = extract_fileparts(stimFile);
-    print_message('Loading: %s\n', [stimName stimExt]);
+    fprintf('Loading: %s\n', [stimName stimExt]);
     
+    %%% create stimulus image from file
     stim = create_stimulus_image(stimFile, options);
     
     %%% save scan and stimulus information
