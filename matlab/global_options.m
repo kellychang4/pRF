@@ -37,3 +37,34 @@ GLOBAL_OPTIONS.twogamma.defaults.a2    = 16;
 GLOBAL_OPTIONS.twogamma.defaults.b1    = 1;
 GLOBAL_OPTIONS.twogamma.defaults.b2    = 1;
 GLOBAL_OPTIONS.twogamma.tmax = 40;
+
+%% Gobal Parameter Validation Functions
+
+%%% prf model parameters
+GLOBAL_OPTIONS.validate.prf.model   = @validate_prf_model;
+GLOBAL_OPTIONS.validate.prf.free    = 'cell'; 
+GLOBAL_OPTIONS.validate.prf.css     = 'logical'; 
+GLOBAL_OPTIONS.validate.prf.space   = 'char'; 
+GLOBAL_OPTIONS.validate.prf.unit    = 'char'; 
+GLOBAL_OPTIONS.validate.prf.func    = 'function_handle'; 
+GLOBAL_OPTIONS.validate.prf.params  = 'cell'; 
+GLOBAL_OPTIONS.validate.prf.funcof  = 
+
+%%% hrf model parameters
+GLOBAL_OPTIONS.validate.hrf.model   = 'char'; 
+GLOBAL_OPTIONS.validate.hrf.free    = 'cell'; 
+GLOBAL_OPTIONS.validate.hrf.thr     = 'double'; 
+GLOBAL_OPTIONS.validate.hrf.pmin    = 'double'; 
+GLOBAL_OPTIONS.validate.hrf.pmax    = 'double'; 
+GLOBAL_OPTIONS.validate.hrf.func    = 'function_handle'; 
+GLOBAL_OPTIONS.validate.hrf.params  = 'cell'; 
+GLOBAL_OPTIONS.validate.hrf.funcof  = 'cell'; 
+
+end
+
+%% Helper Functions
+
+function validate_prf_model(value)
+    
+end
+
