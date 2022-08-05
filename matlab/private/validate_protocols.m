@@ -3,6 +3,7 @@ function validate_protocols(protocols)
 for i = 1:length(protocols) % for each protocol
     curr = protocols(i); % current protocol
     
+    %%% extract units either voxels or vertices
     if isfield(curr, 'voxel'); v = curr.voxel; else; v = curr.vertex; end
     
     %%% validate the number of vertices 

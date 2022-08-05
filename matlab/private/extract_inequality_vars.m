@@ -1,7 +1,7 @@
-function [str] = extract_parameter_name(str)
+function [str] = extract_inequality_vars(str)
 
 if ischar(str); str = {str}; end
-if ~iscell(str); error('requires string or cell data class'); end
+if ~iscell(str); error('Requires string or cell array of strings.'); end
 
 tokens = parse_inequalities(str);
 for i = 1:length(tokens) % for each parameter

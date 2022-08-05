@@ -17,18 +17,18 @@ function [estimates] = estimate_hrf(protocols, seeds, options)
 
 arguments 
     protocols (1,:) struct {validate_protocols(protocols)} 
-    seeds     (1,:) struct {validate_seeds(seeds)}
+    seeds     (1,1) struct {validate_seeds(seeds)}
     options   (1,1) struct {validate_options(options)}
 end
 
 %% Global Variables
 
 update_global_parameters(protocols, seeds, options); 
-unitName = get_global_variables('prf.unit');
+unit = get_global_variables('prf.unit');
 
-%% Open Parallel Core 
+%% Open Parallel Pools
 
-open_parallel(); % open parallel cores
+open_parallel(); % open parallel pools
 
 %% Start HRF Estimation Process
 
@@ -37,12 +37,12 @@ startTime = tic();
 fprintf('Calculating Predicted Response for Each Seed...\n');
 seedResp = calculate_seed_response(protocols, seeds);
 
-fprintf('Calculating Best Seeds for Each %s...\n', capitalize(unitName));
+fprintf('Calculating Best Seeds for Each %s...\n', capitalize(unit));
 %% !!! check is this is necessary
-bestSeed = initialize_best_seed(protocols); 
+bestSeed = initialize_best_seed(protocols); % (!!!)
 bestSeed = calculate_best_seed(bestSeed, seedResp); 
 
-fprintf('Calculating Initial pRF Fits for each %s...\n', capitalize(unitName));
+fprintf('Calculating Initial pRF Fits for each %s...\n', capitalize(unit));
 fitParams = calculate_initial_parameters(bestSeed);
 
 fprintf('Estimating HRF\n');
