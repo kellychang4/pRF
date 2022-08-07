@@ -18,29 +18,23 @@ switch p.flag
         
     case true % parallel processing
         
-        %%% parfor implementation
-        parfor i = 1:nv % for each voxel or vertex
-            %%% fit current vertex or voxel seed values
-            bestSeed(i) = fit_best_seed(bestSeed(i), seedResp);
+        %%% start best seed calculations in background pool
+        f(1:nv) = parallel.FevalFuture(); 
+        for i = 1:nv % for each voxel or vertex
+            f(i) = parfeval(backgroundPool, @fit_best_seed, 1, ...
+                bestSeed(i), seedResp);
         end
-        
-%         %%% start best seed calculations in background pool
-%         f(1:nv) = parallel.FevalFuture(); 
-%         for i = 1:nv % for each voxel or vertex
-%             f(i) = parfeval(backgroundPool, @fit_best_seed, 1, ...
-%                 bestSeed(i), seedResp);
-%         end
-% 
-%         %%% collect completed best seed calculations
-%         for i = 1:nv % for each voxel or vertex
-%             %%% print progress status
-%             print_progress(i, nv);
-%             
-%             %%% fetch best seed results from parallel pool
-%             [indx,results] = fetchNext(f);
-%             bestSeed(indx) = results;
-%         end
-%         
+
+        %%% collect completed best seed calculations
+        for i = 1:nv % for each voxel or vertex
+            %%% print progress status
+            print_progress(i, nv);
+            
+            %%% fetch best seed results from parallel pool
+            [indx,results] = fetchNext(f);
+            bestSeed(indx) = results;
+        end
+
 end
 
 end
@@ -82,4 +76,5 @@ function [bestSeed] = fit_best_seed(bestSeed, seedResp)
     %%% save best seed parameters
     bestSeed.seedId = bestId;
     bestSeed.corr = bestCorr;
+    
 end

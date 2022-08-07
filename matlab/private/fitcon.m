@@ -1,18 +1,13 @@
 function [params,err] = fitcon(errorFunc, params, freeList, varargin)
-% [params,err] = fitcon(funName, params, freeList, var1, var2, var3, ...)
-%
-% Helpful interface to matlab's 'fmincon' function.
+% [params,err] = fitcon(errorFunc, params, freeList [, varargin])
 %
 % Inputs:
-%   funName        Function to be optimized. Must have form
-%                  [err] = <funName>(params, var1, var2, ...)
+%   errorFunc      Error function to be minimized. Must have form
+%                  [err] = <errorFunc>(params [, varargin])
 %
 %   params         A structure of with field names with corresponding
 %                  parameter values for fitted function. 'freeList'
 %                  parameters must only have a singular value per parameter
-%       options    A structure with options for fminsearch program
-%                  (defaults: 'MaxFunEvals', 1e6, 'Display', off;
-%                  see OPTIMSET)
 %
 %   freeList       Cell array containing list of parameter names (strings)
 %                  to be free in fitting. Free strings can contain either
@@ -22,7 +17,7 @@ function [params,err] = fitcon(errorFunc, params, freeList, varargin)
 %
 %                  {'x>0','x<pi','0<x','0>x>10','z>exp(1)','0<y<1'}
 %
-%   var<n>         Extra variables to be sent into fitted function
+%   var<n>         Extra variables to be sent into error function
 %
 % Outputs:
 %   params         A structure with best fitting parameters as fieldnames
@@ -36,30 +31,21 @@ function [params,err] = fitcon(errorFunc, params, freeList, varargin)
 % Edited by Kelly Chang, February 10, 2017
 % Edited by Kelly Chang, July 15, 2022
 
-%% Input Control
+%% Start Fitting Procedure
 
-if isfield(params,'options')
-    options = params.options;
-else
-    options = optimset('fmincon');
-    options = optimset(options, 'MaxFunEvals', 1e6, 'Display', 'off');
-end
+%%% fitting options
+options = optimset('fmincon');
+options = optimset(options, 'MaxFunEvals', 1e6, 'Display', 'off');
 
-if isempty(freeList)
-    freeList = fieldnames(params);
-end
+%%% turn free parameters in to vars, lower and upper bounds
+[vars,lb,ub,varNames] = params2varcon(params, freeList);
 
-%% Turn Initial Free Parameters into vars, lower, and upper bounds
+%%% call non-linear optimization fitting
+vars = fminsearchcon(@fit_function, vars, lb, ub, [], [], [], options, ...
+    errorFunc, params, varNames, varargin);
 
-% turn free parameters in to vars, lower and upper bounds
-[vars,lb,ub,varList] = params2varcon(params, freeList);
+%%% assign final parameters into 'params'
+params = var2params(vars, params, varNames);
 
-% call non-linear optimization fitting
-vars = fminsearchcon('fit_function', vars, lb, ub, [], [], [], options, ...
-    errorFunc, params, varList, varargin);
-
-% assign final parameters into 'params'
-params = var2params(vars, params, varList);
-
-% evaluate the function 'errorFunc' for error at minimum
-err = fit_function(vars, errorFunc, params, varList, varargin);
+%%% evaluate the function 'errorFunc' for error at minimum
+err = fit_function(vars, errorFunc, params, varNames, varargin);

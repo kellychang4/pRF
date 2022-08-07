@@ -1,6 +1,7 @@
-function [varargout] = get_global_variables(varargin)
+function [varargout] = get_global_parameters(varargin)
 
 global GLOBAL_PARAMETERS;
+
 sprintfEval = @(x) sprintf('GLOBAL_PARAMETERS.%s', x); 
 
 if nargin == nargout

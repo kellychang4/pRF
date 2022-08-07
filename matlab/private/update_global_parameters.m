@@ -21,7 +21,7 @@ GLOBAL_PARAMETERS.hrf.pmin   = 0.15;
 GLOBAL_PARAMETERS.hrf.pmax   = 0.25;
 
 %%% fit procedure parameters
-GLOBAL_PARAMETERS.fit.corr = 'Pearson'; 
+GLOBAL_PARAMETERS.fit.name   = 'Pearson'; 
 
 %%% parallel processing parameters
 GLOBAL_PARAMETERS.parallel.flag  = true;
@@ -70,11 +70,6 @@ GLOBAL_PARAMETERS.unit.name  = unit;
 GLOBAL_PARAMETERS.unit.id    = protocols(1).(unit);
 GLOBAL_PARAMETERS.unit.n     = length(protocols(1).(unit)); 
 
-
-%%% fit procedure parameters
-GLOBAL_PARAMETERS.fit.func = @(x,y) corr(x, y, 'type', ...
-    GLOBAL_PARAMETERS.fit.corr);
-
 %%% parallel processing parameters, if parallel available
 if isempty(which('gcp')) % if no parallel toolbox
     fprintf(['[NOTE] Parallel Processing Toolbox does not exist on ', ...
@@ -109,20 +104,28 @@ GLOBAL_PARAMETERS.seeds = create_seeds(seeds);
 GLOBAL_PARAMETERS.n.protocol = length(protocols);
 GLOBAL_PARAMETERS.n.seed = length(seeds);
 
-%%% time steps
-GLOBAL_PARAMETERS.dt.stim = [protocols.stim_dt];
-GLOBAL_PARAMETERS.dt.bold = [protocols.bold_dt];
+%%% fit procedure parameters: correlation functions
+GLOBAL_PARAMETERS.fit.func.corr = @(x,y) corr(x, y, 'type', ...
+    GLOBAL_PARAMETERS.fit.name);
 
-%%% time vectors 
-GLOBAL_PARAMETERS.t.stim = {protocols.stim_t};
-GLOBAL_PARAMETERS.t.bold = {protocols.bold_t};
+%%% fit procedure parameters: prf functions
+GLOBAL_PARAMETERS.fit.func.prf  = GLOBAL_PARAMETERS.prf.func;
+GLOBAL_PARAMETERS.fit.css       = GLOBAL_PARAMETERS.prf.css; 
 
-%%% stimulus images dimensions
+%%% fit procedure parameters: hrf functions
+GLOBAL_PARAMETERS.fit.func.hrf  = GLOBAL_PARAMETERS.hrf.func;
+GLOBAL_PARAMETERS.fit.tmax      = GLOBAL_PARAMETERS.hrf.tmax;
+
+%%% fit procedure parameters: time steps and time vectors
+GLOBAL_PARAMETERS.fit.stim_dt = [protocols.stim_dt];
+GLOBAL_PARAMETERS.fit.stim_t = {protocols.stim_t};
+GLOBAL_PARAMETERS.fit.bold_t = {protocols.bold_t};
+
+%%% fit procedure parameters: stimulus images dimensions (and hrf)
 for i = 1:length(protocols) % for each protocol
     curr = protocols(i); % current protocol
-    GLOBAL_PARAMETERS.t.hrf{i} = 0:curr.stim_dt:GLOBAL_PARAMETERS.hrf.tmax;
-    GLOBAL_PARAMETERS.stim{i} = reshape(curr.stim, size(curr.stim, 1), []); 
-    GLOBAL_PARAMETERS.funcof(i) = curr.stim_funcof;
+    GLOBAL_PARAMETERS.fit.stim{i} = reshape(curr.stim, size(curr.stim, 1), []); 
+    GLOBAL_PARAMETERS.fit.funcof(i) = curr.stim_funcof;
 end
 
 %%% validate global parameters

@@ -1,5 +1,5 @@
-function [estimates] = estimate_hrf(protocols, seeds, options)
-% [estimates] = estimate_hrf(protocols, seeds, options)
+function [estimates,info] = estimate_hrf(protocols, seeds, options)
+% [estimates,info] = estimate_hrf(protocols, seeds, options)
 %
 % Estimates the hrf model given the protocols, seeds, and options
 %
@@ -39,7 +39,7 @@ fprintf('Calculating Predicted Response for Each Seed...\n');
 seedResp = calculate_seed_response(protocols);
 
 fprintf('Calculating Best Seeds for Each %s...\n', unit);
-tic; bestSeed = calculate_best_seed(protocols, seedResp); toc;
+bestSeed = calculate_best_seed(protocols, seedResp);
 
 fprintf('Calculating Initial pRF Fits for each %s...\n', unit);
 fitParams = calculate_initial_parameters(bestSeed);
@@ -50,14 +50,34 @@ for i = 1:niter % for number of hrf fit iterations
 
     %%% fit hrf parameters
     fitParams = fit_hrf(fitParams);
-   
+
     %%% if not last iteration, fit prfs with estimated hrf parameters
     if i ~= niter; fitParams = fit_prf(fitParams); end
 end
 
 fprintf('Collecting Estimated HRF Parameters...\n'); 
-estimates = collect_hrf_estimates(protocols, fitParams);
+[estimates,info] = collect_hrf_estimates(protocols, fitParams);
 
-stopTime = toc(); % clock stop time
-fprintf('Final HRF Estimation Time: %5.2f minutes', round(stopTime/60));
+fprintf('Final HRF Estimation Time: %5.2f minutes', round(toc()/60));
 fprintf('\n\n\n');
+
+end
+
+%% Helper Function
+
+function [estimates,info] = collect_hrf_estimates(protocols, fitParams)
+    %%% save data and stimulus information
+    info.roi_file  = protocols.roi_file; 
+    info.bold_file = protocols.bold_file;
+    info.stim_file = protocols.stim_file;
+    
+    %%% save hrf estimation procedure parameters
+    info.hrf_model = get_global_parameters('hrf.model');  
+    info.hrf_free  = get_global_parameters('hrf.free'); 
+    info.hrf_thr   = get_global_parameters('hrf.thr');
+    info.hrf_niter = get_global_parameters('hrf.niter'); 
+    info.hrf_nfit  = length(fitParams);
+
+    %%% save estimated hrf paramters
+    estimates = fitParams(1).hrf;
+end

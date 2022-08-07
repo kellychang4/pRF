@@ -1,47 +1,29 @@
 function [err] = error_prf(params, args)
-% [err] = error_hrf(params, args)
-%
-% Calcuates the average correlation error (negative) for a given voxel
-% across all scans
-%
-% Inputs:
-%   params           A structure of parameter values for fitted function
-%   args                Additional arguments
-%
-% Outputs:
-%   err                 Mean (negative) cross-correlation across all scans
-%
-% Note:
-% - This function is trying to maximizing the cross-correlation, but
-%   because 'fminsearchcon' is a MINIZATION function, we add a - sign in
-%   front of the cross-correlation to make it negative
+% [err] = error_prf(params, args)
 
-% Written by Jessica Thomas - October 20, 2014
-% Edited by Kelly Chang for pRF package - June 21, 2016
-
-%% Fit HRF Model
-
-err = 0; 
+err = 0; % initialize error term
 for i = 1:length(args.bold) % for each bold time series        
+
     %%% create prf model of unit
-    prfModel = args.prfFunc(params, args.funcof(i));
+    prfModel = args.func.prf(params, args.funcof(i));
     
     %%% multiply stimulus with prfs model
     modelResp = args.stim{i} * prfModel(:); 
     
     %%% (optional) raise to compressive spatial summation exponent
-    if args.prfCss; modelResp = modelResp .^ args.prf.exp; end
+    if args.css; modelResp = modelResp .^ params.exp; end
         
     %%% convolve seed responses with hrf
-    convResp = convolve_with_hrf(modelResp, args.hrf{i}); 
-    convResp = args.dtStim(i) .* convResp; 
+    hrf = args.func.hrf(args.hrf, 0:args.stim_dt(i):args.tmax);
+    convResp = args.stim_dt(i) .* convolve_with_hrf(modelResp, hrf); 
     
     %%% resample at bold tr sampling rate
-    predResp = interp1(args.tStim{i}, convResp, args.tBold{i});
+    predResp = interp1(args.stim_t{i}, convResp, args.bold_t{i});
     
     %%% calculate correlation between bold and predicted response
-    tmp = corr(args.bold{i}, predResp);
+    tmp = args.func.corr(args.bold{i}, predResp);
     err = err + tmp;
+
 end
 
 %%% mean (negative) cross correlation across all scans

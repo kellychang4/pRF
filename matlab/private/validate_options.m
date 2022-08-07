@@ -31,8 +31,8 @@ function validate_options(options)
     %%% (optional) validate fitting procedure parameters 
     if isfield(options, 'fit')
         %%% validate fitting correlation types
-        mustBeField(options.fit, 'corr');
-        mustBeMember(options.fit.corr, {'Pearson', 'Spearman', 'Kendall'});
+        mustBeField(options.fit, 'name');
+        mustBeMember(options.fit.name, {'Pearson', 'Spearman', 'Kendall'});
     end
 
     %%% (optional) validate parallel processing parameters 

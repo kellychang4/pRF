@@ -1,66 +1,67 @@
-function [fitParams] = fit_prf(initParams)
-% [fitParams] = fit_hrf(initParams)
-%
-% Returns a structure containing the best fitting parameters after an
-% iterative HRF and pRF fitting.
-%
-% The HRF fitting process only takes the voxels that have passed the
-% specified correlation threshold 'opt.hrfThr' and/or are apart of the top
-% fitting percentage 'opt.topHRF'.
-%
-% While holding the pRF parameters constant, the HRF free parameters are
-% fitted. Then the estimated HRF parameters are held constant, the pRF
-% parameters are fitted again. This process repeats for the specified
-% 'opt.estHRF' iterations.
-%
-% Inputs:
-%   fitParams       A structure of parameter values of HRF and pRF that are
-%                   to be fitted as fields
-%
-% Output:
-%   fittedParams    A structure with the best fitting parameters from
-%                   fitting the HRF and pRF model.
+function [fitParams] = fit_prf(fitParams)
+% [fitParams] = fit_prf(initParams)
 
-% Written by Kelly Chang - February 2, 2017
-% Edited by Kelly Chang - July 15, 2022
+%%% global parameters
+[p,prfFree,globalArgs] = get_global_parameters('parallel', 'prf.free', 'fit');
 
-%% Fit pRF
+%%% initialized parameters
+nv = length(fitParams); 
+fitParams = initialize_fit_params(fitParams);
 
-fitParams = initParams;
-nProtocol = get_global_variables('n.protocol'); 
-[parallelFlag,freeList] = get_global_variables('fit.parallel', 'prf.free');
-globalArgs = get_global_variables('prf.func', 'stim', 'funcof', ...
-    'prf.css', 'dt.stim', 'hrf.func', 'hrf.tmax', 't.stim', 't.bold');
+switch p.flag
+    case false % sequential processing
 
-hrfParams = initParams(1).hrf; % same hrf parameters for all units
-for i = 1:nProtocol % for each protocol
-    t = 0:globalArgs.dtStim(i):globalArgs.hrfTmax;
-    globalArgs.hrf{i} = globalArgs.hrfFunc(hrfParams, t);
+        for i = 1:nv % for each unit
+
+            %%% print progress status
+            print_progress(i, nv); 
+
+            %%% fit current vertex or voxel hrf parameters
+            fitParams(i) = fit_unit_prf(fitParams(i), prfFree, globalArgs);
+
+        end
+
+    case true % parallel processing
+        
+        %%% start prf fitting in background pool
+        f(1:nv) = parallel.FevalFuture(); 
+        for i = 1:nv % for each unit
+            f(i) = parfeval(backgroundPool, @fit_unit_prf, 1, ...
+                fitParams(i), prfFree, globalArgs); 
+        end
+            
+        %%% collect prf fitted paramters 
+        for i = 1:nv % for each unit
+            %%% print progress status
+            print_progress(i, nv);
+            
+            %%% fetch hrf parameters results from parallel pool
+            [indx, results] = fetchNext(f);
+            fitParams(indx) = results;
+        end
+
 end
 
-%%
+end
 
-switch parallelFlag
-    case 0
-        fprintf('crying\n'); 
-    case 1
-       
-       parfor i = 1:length(initParams) % for each unit
-            fprintf('    Vertex %4d of %d\n', i, length(initParams)); 
-            
-            %%% clear previous fitting values
-            fitParams(i).corr = NaN;
-            
-            %%% separate prf parameters and other information
-            params = initParams(i).prf; % prf parameters
-            args = combine_structures(globalArgs, ...
-                rmfield(initParams(i), {'prf', 'hrf'}));  
-            
-            %%% call 'fitcon' on unit
-            [outParams,err] = fitcon(@error_prf, params, freeList, args);
-            
-            %%% save fitted parameter outputs
-            fitParams(i).prf = outParams;
-            fitParams(i).corr = -err; 
-        end
+%% Helper Functions
+
+function [fitParams] = initialize_fit_params(initParams)
+    %%% initialize and clear previous fitting values
+    fitParams = initParams; % initialize with previous fits
+    for i = 1:length(fitParams); fitParams(i).corr = NaN; end
+end
+
+function [fitParams] = fit_unit_prf(fitParams, freeList, globalArgs)
+
+    %%% separate prf parameters and other information
+    params = fitParams.prf; % initial prf parameters
+    args = combine_structures(globalArgs, rmfield(fitParams, 'prf'));
+
+    %%% call 'fitcon' on unit
+    [outParams,err] = fitcon(@error_prf, params, freeList, args);
+
+    %%% save fitted parameter outputs
+    fitParams.prf  = outParams;
+    fitParams.corr = -err;
 end
