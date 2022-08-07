@@ -1,4 +1,4 @@
-function validate_options(options)
+function validate_options_prf(options)
     
     %%% validate prf model options
     mustBeField(options, 'prf'); mustBeField(options.prf, 'model');
@@ -9,25 +9,11 @@ function validate_options(options)
     mustBeInequality(options.prf.free); 
 
     %%% validate hrf model options
-    mustBeField(options, 'hrf'); mustBeField(options.hrf, 'model');
-    mustBeMember(options.hrf.model, {'Boynton', 'Two Gamma'});
-    
-    %%% validate hrf model free parameters
-    mustBeField(options.hrf, 'free'); mustBeA(options.hrf.free, 'cell');
-    mustBeInequality(options.hrf.free);
+    if isfield(options, 'hrf')
+        mustBeField(options.hrf, 'model');
+        mustBeMember(options.hrf.model, {'Boynton', 'Two Gamma'});
+    end
 
-    %%% validate hrf iteration integer and range (1 - 5)
-    mustBeField(options.hrf, 'niter'); mustBeInteger(options.hrf.niter);
-    mustBeInRange(options.hrf.niter, 1, 5);
-    
-    %%% validate hrf threshold range (0 - 1.0)
-    mustBeField(options.hrf, 'thr'); mustBeInRange(options.hrf.thr, 0, 1);
-    
-    %%% validate hrf fitting proportion range (1% - 100%)
-    mustBeField(options.hrf, 'pmin'); mustBeField(options.hrf, 'pmax');
-    mustBeInRange(options.hrf.pmin, 0.01, options.hrf.pmax, 'exclude-upper');
-    mustBeInRange(options.hrf.pmax, options.hrf.pmin, 1, 'exclude-lower');
-    
     %%% (optional) validate fitting procedure parameters 
     if isfield(options, 'fit')
         %%% validate fitting correlation types

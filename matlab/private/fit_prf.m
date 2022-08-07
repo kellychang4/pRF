@@ -53,7 +53,6 @@ function [fitParams] = initialize_fit_params(initParams)
 end
 
 function [fitParams] = fit_unit_prf(fitParams, freeList, globalArgs)
-
     %%% separate prf parameters and other information
     params = fitParams.prf; % initial prf parameters
     args = combine_structures(globalArgs, rmfield(fitParams, 'prf'));

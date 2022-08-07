@@ -18,12 +18,12 @@ function [estimates,info] = estimate_hrf(protocols, seeds, options)
 arguments 
     protocols (1,:) struct {validate_protocols(protocols)} 
     seeds     (1,1) struct {validate_seeds(seeds)}
-    options   (1,1) struct {validate_options(options)}
+    options   (1,1) struct {validate_options_hrf(options)}
 end
 
 %% Global Variables
 
-update_global_parameters(protocols, seeds, options); 
+update_global_parameters(protocols, seeds, [], options); 
 [unit,niter] = get_global_parameters('unit.name', 'hrf.niter');
 unit = capitalize(unit);
 
@@ -68,8 +68,8 @@ end
 function [estimates,info] = collect_hrf_estimates(protocols, fitParams)
     %%% save data and stimulus information
     info.roi_file  = protocols.roi_file; 
-    info.bold_file = protocols.bold_file;
-    info.stim_file = protocols.stim_file;
+    info.bold_file = {protocols.bold_file};
+    info.stim_file = {protocols.stim_file};
     
     %%% save hrf estimation procedure parameters
     info.hrf_model = get_global_parameters('hrf.model');  

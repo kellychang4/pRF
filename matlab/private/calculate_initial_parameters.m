@@ -1,30 +1,34 @@
 function [initParams] = calculate_initial_parameters(bestSeed)
 
+%%% global parameters
 [nv,hrf,seeds] = get_global_parameters('unit.n', 'hrf', 'seeds');
 
-%%% calculate best seed threshold index and range values
-thrIndx = [bestSeed.corr] > hrf.thr; % threshold index
-nMin = ceil(nv .* hrf.pmin); nMax = ceil(nv .* hrf.pmax);
-
-%%% if no units past threshold to minimum value, decrease threshold
-if sum(thrIndx) < nMin
-    while sum(thrIndx) < nMin
-        hrf.thr = hrf.thr - 0.01; % decrement threshold 
-        thrIndx = [bestSeed.corr] > hrf.thr;
+%%% if fitting hrf, subset units for fitting process
+if ~isempty(hrf.free) % if free hrf parameters are not empty
+    %%% calculate best seed threshold index and range values
+    thrIndx = [bestSeed.corr] > hrf.thr; % threshold index
+    nMin = ceil(nv .* hrf.pmin); nMax = ceil(nv .* hrf.pmax);
+    
+    %%% if no units past threshold to minimum value, decrease threshold
+    if sum(thrIndx) < nMin
+        while sum(thrIndx) < nMin
+            hrf.thr = hrf.thr - 0.01; % decrement threshold 
+            thrIndx = [bestSeed.corr] > hrf.thr;
+        end
+        fprintf(['[NOTE] Insufficient number of units after seed ', ...
+            'fitting that were past threshold.\nLowering correlation ', ...
+            'threshold to %0.2f.\n'], hrf.thr);
+        set_global_parameters('hrf.thr', hrf.thr); 
     end
-    fprintf(['[NOTE] Insufficient number of units after seed ', ...
-        'fitting that were past threshold.\nLowering correlation ', ...
-        'threshold to %0.2f.\n'], hrf.thr);
-    set_global_parameters('hrf.thr', hrf.thr); 
+    
+    %%% subset to units with seed fits past threshold
+    bestSeed = bestSeed(thrIndx); % threshold limit
+    [~,sortId] = sort([bestSeed.corr], 'descend');
+    
+    %%% truncate to number units allowed to be fit
+    nSubset = min(max(length(bestSeed), nMin), nMax);
+    bestSeed = bestSeed(sortId(1:nSubset));
 end
-
-%%% subset to units with seed fits past threshold
-bestSeed = bestSeed(thrIndx); % threshold limit
-[~,sortId] = sort([bestSeed.corr], 'descend');
-
-%%% truncate to number units allowed to be fit
-nSubset = min(max(length(bestSeed), nMin), nMax);
-bestSeed = bestSeed(sortId(1:nSubset));
 
 %%% create initial parameter structure
 initParams = struct();

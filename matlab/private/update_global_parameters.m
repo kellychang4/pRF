@@ -1,4 +1,4 @@
-function update_global_parameters(protocols, seeds, options)
+function update_global_parameters(protocols, seeds, hrf, options)
  
 % declare global options
 clear global; global_options(); 
@@ -32,7 +32,12 @@ GLOBAL_PARAMETERS.print.quiet = false;
 GLOBAL_PARAMETERS.print.inc   = 1000; 
 
 %%% overwrite with user specified options
+if ~isempty(hrf) % if hrf provided, remove options.hrf 
+    if isfield(options, 'hrf'); options = rmfield(options, 'hrf'); end
+    options.hrf.model = hrf.model; % replace with hrf structure information
+end
 overwrite_global_parameters(options);
+
 
 %% Derived Parameters
 
@@ -62,6 +67,9 @@ end
 hrfModel = format_model_string(GLOBAL_PARAMETERS.hrf.model);
 GLOBAL_PARAMETERS.hrf = combine_structures(GLOBAL_PARAMETERS.hrf, ...
     GLOBAL_OPTIONS.(hrfModel));
+
+%%% overwrite hrf default parameters with user given values
+if ~isempty(hrf); GLOBAL_PARAMETERS.hrf.defaults = hrf.params; end
 
 %%% unit parameters 
 if endsWith(protocols(1).bold_file, '.gii')

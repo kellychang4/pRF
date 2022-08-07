@@ -1,7 +1,7 @@
 function [bestSeed] = calculate_best_seed(protocols, seedResp)
 
 %%% global parameters
-[nv,p] = get_global_parameters('unit.n', 'parallel'); 
+[nv,p,corrFunc] = get_global_parameters('unit.n', 'parallel', 'fit.func.corr'); 
 
 bestSeed = initialize_best_seed(protocols);
 
@@ -13,7 +13,7 @@ switch p.flag
             print_progress(i, nv);
 
             %%% fit current vertex or voxel seed values
-            bestSeed(i) = fit_best_seed(bestSeed(i), seedResp);
+            bestSeed(i) = fit_best_seed(bestSeed(i), corrFunc, seedResp);
         end
         
     case true % parallel processing
@@ -22,7 +22,7 @@ switch p.flag
         f(1:nv) = parallel.FevalFuture(); 
         for i = 1:nv % for each voxel or vertex
             f(i) = parfeval(backgroundPool, @fit_best_seed, 1, ...
-                bestSeed(i), seedResp);
+                bestSeed(i), corrFunc, seedResp);
         end
 
         %%% collect completed best seed calculations
@@ -61,14 +61,14 @@ function [bestSeed] = initialize_best_seed(protocols)
 end
 
 %%% fit best seed for each unit
-function [bestSeed] = fit_best_seed(bestSeed, seedResp)
+function [bestSeed] = fit_best_seed(bestSeed, corrFunc, seedResp)
 
     %%% intialize correlation matrix
     seedCorr = NaN(length(bestSeed.bold), size(seedResp{1}, 2));
 
-    %%% find best seeds to intialize HRF fitting
+    %%% find best seeds to intialize pRF fitting
     for i2 = 1:size(seedCorr, 1) % for each protocol
-        seedCorr(i2,:) = corr(bestSeed.bold{i2}, seedResp{i2});
+        seedCorr(i2,:) = corrFunc(bestSeed.bold{i2}, seedResp{i2});
     end
     seedCorr = mean(seedCorr); % average across protocols
     [bestCorr,bestId] = max(seedCorr); % find best seeds

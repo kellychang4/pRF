@@ -1,5 +1,5 @@
-function [estimates] = estimate_prf(protocols, seeds, options)
-% [estimates] = estimate_prf(protocols, seeds, options)
+function [estimates,info] = estimate_prf(protocols, seeds, hrf, options)
+% [estimates,info] = estimate_prf(protocols, seeds, hrf, options)
 %
 % Estimates the pRF model given the protocols, seeds, and options
 %
@@ -8,8 +8,10 @@ function [estimates] = estimate_prf(protocols, seeds, options)
 %                           scan(s) (see 'create_protocols.m')
 %   seeds                   A structure containing information about the
 %                           seeds (see 'create_seeds.m')
+%   hrf                     A structure containing information about the
+%                           hrf parameters and options.
 %   options                 A structure containing information about model
-%                           fitting options (see 'create_opt.m')
+%                           fitting options (see 'create_options.m')
 
 % Written by Kelly Chang - June 29, 2022
 
@@ -18,14 +20,14 @@ function [estimates] = estimate_prf(protocols, seeds, options)
 arguments 
     protocols (1,:) struct {validate_protocols(protocols)} 
     seeds     (1,1) struct {validate_seeds(seeds)}
-    options   (1,1) struct {validate_options(options)}
+    hrf       (1,1) struct {validate_hrf(hrf)}
+    options   (1,1) struct {validate_options_prf(options)}
 end
 
 %% Global Variables
 
-update_global_parameters(protocols, seeds, options); 
-[unit] = get_global_parameters('unit.name');
-unit = capitalize(unit);
+update_global_parameters(protocols, seeds, hrf, options); 
+[unit] = capitalize(get_global_parameters('unit.name'));
 
 %% Open Parallel Pools
 
@@ -48,8 +50,36 @@ fprintf('Estimating pRF Parameters for each %s...\n', unit);
 fitParams = fit_prf(initParams);
 
 fprintf('Collecting Estimated pRF Parameters...\n'); 
-estimates = collect_prf_estimates(protocols, fitParams);
+[estimates,info] = collect_prf_estimates(protocols, fitParams);
 
-stopTime = toc(); % clock stop time
-fprintf('Final pRF Estimation Time: %5.2f minutes', round(stopTime/60));
+fprintf('Final pRF Estimation Time: %5.2f minutes', round(toc()/60));
 fprintf('\n\n\n');
+
+end
+
+%% Helper Function
+
+function [estimates,info] = collect_prf_estimates(protocols, fitParams)
+    [unit,params] = get_global_parameters('unit', 'prf.params'); 
+
+    %%% save data and stimulus information
+    info.roi_file  = protocols.roi_file; 
+    info.bold_file = {protocols.bold_file};
+    info.stim_file = {protocols.stim_file};
+    
+    %%% save prf estimation procedure parameters
+    info.prf_model  = get_global_parameters('prf.model');  
+    info.prf_free   = get_global_parameters('prf.free'); 
+    info.hrf_model  = get_global_parameters('hrf.model');
+    info.hrf_params = get_global_parameters('hrf.defaults');
+    
+    %%% save estimated prf paramters
+    estimates = initialize_structure(unit.n, [unit.name, params, 'corr']);
+    for i = 1:length(fitParams) % for each unit
+        estimates(i).(unit.name) = fitParams(i).id; 
+        for p = 1:length(params) % for each parameter
+            estimates(i).(params{p}) = fitParams(i).prf.(params{p});
+        end
+        estimates(i).corr   = fitParams(i).corr;
+    end
+end
