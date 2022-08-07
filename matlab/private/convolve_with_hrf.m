@@ -1,5 +1,5 @@
 function [convImg] = convolve_with_hrf(img, hrf)
-% [convImg] = convolve_with_hrf(img, hrfParams, dt)
+% [convImg] = convolve_with_hrf(img, hrf, dt)
 
 %% Convolve Model Response with HRF
  

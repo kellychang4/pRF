@@ -1,21 +1,23 @@
-function [seedResp] = calculate_seed_response(protocols, seeds)
+function [seedResp] = calculate_seed_response(protocols)
 
-opt = get_global_variables('prf.func', 'prf.funcof', 'prf.css'); 
-hrfParams = get_global_variables('hrf.defaults'); 
+%%% global parameters
+[n,prf,seeds,hrf] = get_global_parameters('n', 'prf', 'seeds', 'hrf');
 
-seedResp = cell(length(protocols), 1); 
-for i = 1:length(protocols) % for each scan
+%%% calculate seed response
+seedResp = cell(n.protocol, 1);
+for i = 1:n.protocol % for each protocol
     %%% extract current protocol variables
-    funcof = protocols(i).stim_funcof;
-    stim = protocols(i).stim; 
-    dt = protocols(i).stim_dt; 
-    tStim = protocols(i).stim_t;
-    tBold = protocols(i).bold_t;
+    protocol = protocols(i); 
+    funcof = protocol.stim_funcof;
+    stim   = protocol.stim; 
+    dt     = protocol.stim_dt; 
+    tStim  = protocol.stim_t;
+    tBold  = protocol.bold_t;
     
     %%% generate prf models from prf parameter seeds
-    seedMat = NaN(numel(funcof.(opt.prfFuncof{1})), length(seeds));
+    seedMat = NaN(numel(funcof.(prf.funcof{1})), n.seed);
     for i2 = 1:length(seeds) % for each seed
-        seedModel = opt.prfFunc(seeds(i2), funcof);
+        seedModel = prf.func(seeds(i2), funcof);
         seedMat(:,i2) = seedModel(:); 
     end
     
@@ -26,10 +28,11 @@ for i = 1:length(protocols) % for each scan
     modelResp = stimImg * seedMat; 
     
     %%% (optional) raise to compressive spatial summation exponent
-    if opt.prfCss; modelResp = bsxfun(@power, modelResp, [seeds.exp]); end
+    if prf.css; modelResp = bsxfun(@power, modelResp, [seeds.exp]); end
         
     %%% convolve seed responses with hrf
-    convResp = convolve_with_hrf(modelResp, hrfParams, dt); 
+    hemo = hrf.func(hrf.defaults, 0:dt:hrf.tmax);
+    convResp = convolve_with_hrf(modelResp, hemo); 
     
     %%% resample at bold tr sampling rate
     seedResp{i} = interp1(tStim, convResp, tBold);

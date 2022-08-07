@@ -1,7 +1,7 @@
-function [estimates] = estimate_hrf(protocols, seeds, options)
-% [estimates] = estimate_hrf(protocols, seeds, options)
+function [estimates] = estimate_prf(protocols, seeds, options)
+% [estimates] = estimate_prf(protocols, seeds, options)
 %
-% Estimates the hrf model given the protocols, seeds, and options
+% Estimates the pRF model given the protocols, seeds, and options
 %
 % Inputs:
 %   protocols               A structure containing information about the
@@ -24,40 +24,32 @@ end
 %% Global Variables
 
 update_global_parameters(protocols, seeds, options); 
-[unit,niter] = get_global_parameters('unit.name', 'hrf.niter');
+[unit] = get_global_parameters('unit.name');
 unit = capitalize(unit);
 
 %% Open Parallel Pools
 
 open_parallel(); % open parallel pools
 
-%% Start HRF Estimation Process
+%% Start pRF Estimation Process
 
-tic(); % start hrf estimation clock
+tic(); % start prf estimation clock
 
 fprintf('Calculating Predicted Response for Each Seed...\n');
 seedResp = calculate_seed_response(protocols);
 
 fprintf('Calculating Best Seeds for Each %s...\n', unit);
-tic; bestSeed = calculate_best_seed(protocols, seedResp); toc;
+bestSeed = calculate_best_seed(protocols, seedResp);
 
 fprintf('Calculating Initial pRF Fits for each %s...\n', unit);
-fitParams = calculate_initial_parameters(bestSeed);
+initParams = calculate_initial_parameters(bestSeed);
 
-fprintf('Estimating HRF...\n');
-for i = 1:niter % for number of hrf fit iterations
-    fprintf(' Iteration %d of %d...\n', i, niter);
+fprintf('Estimating pRF Parameters for each %s...\n', unit);
+fitParams = fit_prf(initParams);
 
-    %%% fit hrf parameters
-    fitParams = fit_hrf(fitParams);
-   
-    %%% if not last iteration, fit prfs with estimated hrf parameters
-    if i ~= niter; fitParams = fit_prf(fitParams); end
-end
-
-fprintf('Collecting Estimated HRF Parameters...\n'); 
-estimates = collect_hrf_estimates(protocols, fitParams);
+fprintf('Collecting Estimated pRF Parameters...\n'); 
+estimates = collect_prf_estimates(protocols, fitParams);
 
 stopTime = toc(); % clock stop time
-fprintf('Final HRF Estimation Time: %5.2f minutes', round(stopTime/60));
+fprintf('Final pRF Estimation Time: %5.2f minutes', round(stopTime/60));
 fprintf('\n\n\n');

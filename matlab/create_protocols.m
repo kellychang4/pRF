@@ -128,6 +128,23 @@ function [protocols] = initialize_protocols(boldFile, n)
     protocols = initialize_structure(n, flds); 
 end
 
+%%% read vertices and ras coordinates from .label files
+function [vertices,ras] = read_label(labelFile)
+    %%% read raw text of label file
+    fid = fopen(labelFile,'r');
+    data = textscan(fid, '%f%f%f%f%f\n', 'HeaderLines', 2);
+    fclose(fid); % close text file
+    
+    %%% extract vertex indices and ras coordinates from text
+    vertices = data{1}; % note: zero-based indexing!
+    ras = [data{2} data{3} data{4}]; % right-anterior-superior
+    
+    %%% return unique vertices and coordinates in 1-based indexing
+    [~,uIndx] = unique(vertices);   % locate unique vertices
+    vertices = vertices(uIndx) + 1; % for matlab, one-based indexing
+    ras = ras(uIndx,:); % matching unique RAS coordinates
+end
+
 %%% create scan structure from brainvoyager vtc files
 function [scan] = create_brainvoyager_scan(boldFile, roiFile)
     %%% read source bold data and roi indices
@@ -156,7 +173,7 @@ function [scan] = create_nifti_scan(boldFile, roiFile)
     tc = squeeze(bold.vol);   % coerce data to shape
     tc = permute(tc, [ndims(tc) 1:(ndims(tc)-1)]); % bold time course
     tc = reshape(tc, size(tc,1), []); % flatten dimensions
-    voxels = readLabels(roiFile);   % read .label ROI file
+    voxels = read_label(roiFile);   % read .label ROI file
     
     %%% save scan information in 'scan' output
     scan.file = filename(boldFile); % name of bold data file
@@ -172,7 +189,7 @@ function [scan] = create_gifti_scan(boldFile, roiFile, TR)
     %%% read source bold data information
     bold = gifti(boldFile); % load .gii file
     tc = permute(bold.cdata, [2 1]); % reverse dimensions to [nt nv]
-    vertices = readLabels(roiFile);  % read .label ROI file
+    vertices = read_label(roiFile);  % read .label ROI file
     
     %%% save scan information in 'scan' output
     scan.file = filename(boldFile); % name of bold data file

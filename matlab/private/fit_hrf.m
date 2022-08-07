@@ -1,57 +1,92 @@
 function [fitParams] = fit_hrf(initParams)
 % [fitParams] = fit_hrf(initParams)
-%
-% Returns a structure containing the best fitting parameters after an
-% iterative HRF and pRF fitting.
-%
-% The HRF fitting process only takes the voxels that have passed the
-% specified correlation threshold 'opt.hrfThr' and/or are apart of the top
-% fitting percentage 'opt.topHRF'.
-%
-% While holding the pRF parameters constant, the HRF free parameters are
-% fitted. Then the estimated HRF parameters are held constant, the pRF
-% parameters are fitted again. This process repeats for the specified
-% 'opt.estHRF' iterations.
-%
-% Inputs:
-%   fitParams       A structure of parameter values of HRF and pRF that are
-%                   to be fitted as fields
-%
-% Output:
-%   fittedParams    A structure with the best fitting parameters from
-%                   fitting the HRF and pRF model.
 
-% Written by Kelly Chang - February 2, 2017
-% Edited by Kelly Chang - July 15, 2022
+%%% global parameters
+[p,freeList] = get_global_parameters('parallel', 'hrf.free');
 
-%% Fit HRF
-
-fitParams = initParams;
-[parallelFlag,freeList] = get_global_variables('fit.parallel', 'hrf.free');
-globalArgs = get_global_variables('prf.func', 'stim', 'funcof', ...
+% (!!!)
+globalArgs = get_global_parameters('prf.func', 'stim', 'funcof', ...
     'prf.css', 'dt.stim', 'hrf.func', 'hrf.tmax', 't.stim', 't.bold');
 
-switch parallelFlag
-    case 0
-        fprintf('crying\n'); 
-    case 1
-       
-        parfor i = 1:length(initParams) % for each unit
-            fprintf('    Vertex %4d of %d\n', i, length(initParams)); 
-            
-            %%% clear previous fitting values
-            fitParams(i).corr = NaN;
-            
+%%% initialized parameters
+nv = length(initParams); fitParams = initialize_fit_params(initParams);
+
+switch p.flag
+    case false % sequential processing
+
+        for i = 1:nv % for each unit
+
+            %%% print progress status
+            print_progress(i, nv);
+
             %%% separate hrf parameters and other information
             params = initParams(i).hrf; % hrf parameters
             args = combine_structures(globalArgs, ...
-                rmfield(initParams(i), 'hrf'));  
-            
-            %%% call 'fitcon' on unit
-            [outParams,err] = fitcon(@error_hrf, params, freeList, args);
-            
-            %%% save fitted parameter outputs
-            fitParams(i).hrf = outParams;
-            fitParams(i).corr = -err; 
+                rmfield(initParams(i), 'hrf'));
+
+            %%% fit current vertex or voxel hrf parameters
+            fitParams(i) = fit_unit_hrf(fitParams(i), params, freeList, args);
         end
+
+    case true % parallel processing
+        
+%         %%% start hrf fitting in background pool
+%         f(1:nv) = parallel.FevalFuture(); 
+%         for i = 1:nv % for each unit
+
+%             params = initParams(i).hrf; % hrf parameters
+%             args = combine_structures(globalArgs, ...
+%                 rmfield(initParams(i), 'hrf'));
+
+%             f(i) = parfeval(backgroundPool, @fit_unit_hrf, 1, ...
+%                 params, freeList, args); 
+%         end
+%             
+%         %%% collect hrf fit paramters 
+%         for i = 1:nv % for each unit
+%             %%% print progress status
+%             print_progress(i, nv);
+%             
+%             %%% fetch hrf parameters results from parallel pool
+%             [indx, results] = fetchNext(f);
+%             fitParams(indx) = results;
+%         end
+
+end
+
+%%% calculate median hrf parameter across all units
+fitParams = calculate_median_hrf(fitParams);
+
+end
+
+%% Helper Functions
+
+function [fitParams] = initialize_fit_params(initParams)
+    %%% initialize and clear previous fitting values
+    fitParams = initParams; % initialize with previous fits
+    for i = 1:length(fitParams); fitParams(i).corr = NaN; end
+end
+
+function [fitParams] = fit_unit_hrf(fitParams, params, freeList, args)
+    %%% call 'fitcon' on unit
+    [outParams,err] = fitcon(@error_hrf, params, freeList, args);
+
+    %%% save fitted parameter outputs
+    fitParams.hrf  = outParams;
+    fitParams.corr = -err;
+end
+
+function [fitParams] = calculate_median_hrf(fitParams)
+    %%% extract fitted hrf parameters and names
+    params = cat(1, fitParams.hrf); flds = fieldnames(params);
+
+    %%% calulate median value for each hrf parameter
+    for i = 1:length(flds) % for each field
+        mdn.(flds{i}) = median([params.(flds{i})], 'omitnan'); 
+    end
+    
+    %%% assign median hrf parameter values to each unit
+    for i = 1:length(fitParams) % for each unit
+        fitParams(i).hrf = mdn; 
+    end
 end

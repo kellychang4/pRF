@@ -1,65 +1,85 @@
-function [bestSeed] = calculate_best_seed(bestSeed, seedResp)
+function [bestSeed] = calculate_best_seed(protocols, seedResp)
 
-n = get_global_variables('n'); 
+%%% global parameters
+[nv,p] = get_global_parameters('unit.n', 'parallel'); 
 
-parallelFlag = get_global_variables('fit.parallel');
-% nUnits = get_global_variables('print.nunits'); 
+bestSeed = initialize_best_seed(protocols);
 
-switch parallelFlag
-    case 0
+switch p.flag
+    case false % sequential processing
         
-        for i = 1:n.unit % for each unit
-        
+        for i = 1:nv % for each unit
             %%% print progress status
-%             if ~mod(i, nUnits)
-%                 unitStr = sprintf('%%%dd', vLength);
-%                 print_message(['  Vertex ', unitStr, ' out of %d (%6.2f%%)...\n'], i, nv, i/nv*100); 
-%             end
-            
-            %%% current vertex or voxel seed values
-            curr = bestSeed(i);
-            
-            %%% find best seeds to intialize HRF fitting
-            seedCorr = NaN(n.protocols, n.seeds); 
-            for i2 = 1:n.protocols % for each scan
-                seedCorr(i2,:) = corr(curr.bold{i2}, seedResp{i2});
-            end
-            seedCorr = mean(seedCorr); % average across scan
-            [bestCorr,bestId] = max(seedCorr); % find best seeds
-            
-            %%% save best seed parameters
-            bestSeed(i).seedId = bestId;
-            bestSeed(i).corr = bestCorr;
+            print_progress(i, nv);
+
+            %%% fit current vertex or voxel seed values
+            bestSeed(i) = fit_best_seed(bestSeed(i), seedResp);
         end
         
-    case 1
+    case true % parallel processing
         
-        %%% initialize parfor progress bar
-%         if ~flags.printQuiet; parfor_progress(nv); end
-        
-        parfor i = 1:n.unit % for each voxel or vertex
-            fprintf('Vertex %6d of %d\n', i, n.unit);
-            %%% print progress status
-%             if ~flags.printQuiet 
-%                 fprintf('  %d out of %d (%0.2f%%)...\n', i, nv, i ./ nv .* 100); 
-%             end
- 
-            %%% current vertex or voxel seed values
-            curr = bestSeed(i);
-            
-            %%% find best seeds to intialize HRF fitting
-            seedCorr = NaN(n.protocols, n.seeds); 
-            for i2 = 1:n.protocols % for each scan
-                seedCorr(i2,:) = corr(curr.bold{i2}, seedResp{i2});
-            end
-            seedCorr = mean(seedCorr); % average across scan
-            [bestCorr,bestId] = max(seedCorr); % find best seeds
-            
-            %%% save best seed parameters
-            bestSeed(i).seedId = bestId;
-            bestSeed(i).corr = bestCorr;
+        %%% parfor implementation
+        parfor i = 1:nv % for each voxel or vertex
+            %%% fit current vertex or voxel seed values
+            bestSeed(i) = fit_best_seed(bestSeed(i), seedResp);
         end
         
-        %%% delete parfor progress bar
-%         if ~flags.printQuiet; parfor_progress(0); end
+%         %%% start best seed calculations in background pool
+%         f(1:nv) = parallel.FevalFuture(); 
+%         for i = 1:nv % for each voxel or vertex
+%             f(i) = parfeval(backgroundPool, @fit_best_seed, 1, ...
+%                 bestSeed(i), seedResp);
+%         end
+% 
+%         %%% collect completed best seed calculations
+%         for i = 1:nv % for each voxel or vertex
+%             %%% print progress status
+%             print_progress(i, nv);
+%             
+%             %%% fetch best seed results from parallel pool
+%             [indx,results] = fetchNext(f);
+%             bestSeed(indx) = results;
+%         end
+%         
+end
+
+end
+
+%% Helper Functions
+function [bestSeed] = initialize_best_seed(protocols)
+
+    %%% global parameters
+    unit = get_global_parameters('unit');
+
+    %%% initialize best seed structure
+    flds = {'id', 'bold', 'seedId', 'corr'};
+    bestSeed = initialize_structure(unit.n, flds);
+  
+    %%% assign best seed fields with values
+    for i = 1:unit.n % for each unit
+        bestSeed(i).id = unit.id(i);
+        bestSeed(i).bold = cell(1, length(protocols));
+        for i2 = 1:length(protocols) % for each protocol
+            bestSeed(i).bold{i2} = protocols(i2).bold(:,i);
+        end
+    end
+
+end
+
+%%% fit best seed for each unit
+function [bestSeed] = fit_best_seed(bestSeed, seedResp)
+
+    %%% intialize correlation matrix
+    seedCorr = NaN(length(bestSeed.bold), size(seedResp{1}, 2));
+
+    %%% find best seeds to intialize HRF fitting
+    for i2 = 1:size(seedCorr, 1) % for each protocol
+        seedCorr(i2,:) = corr(bestSeed.bold{i2}, seedResp{i2});
+    end
+    seedCorr = mean(seedCorr); % average across protocols
+    [bestCorr,bestId] = max(seedCorr); % find best seeds
+    
+    %%% save best seed parameters
+    bestSeed.seedId = bestId;
+    bestSeed.corr = bestCorr;
 end

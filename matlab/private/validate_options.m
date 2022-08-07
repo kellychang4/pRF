@@ -5,15 +5,17 @@ function validate_options(options)
     mustBeMember(options.prf.model, {'Gaussian 1D', 'Gaussian 2D'});
     
     %%% validate prf model free parameters
-    mustBeField(options.prf, 'free'); mustBeText(options.prf.free);
-    
+    mustBeField(options.prf, 'free'); mustBeA(options.prf.free, 'cell'); 
+    mustBeInequality(options.prf.free); 
+
     %%% validate hrf model options
     mustBeField(options, 'hrf'); mustBeField(options.hrf, 'model');
     mustBeMember(options.hrf.model, {'Boynton', 'Two Gamma'});
     
     %%% validate hrf model free parameters
-    mustBeField(options.hrf, 'free'); mustBeText(options.hrf.free);
-    
+    mustBeField(options.hrf, 'free'); mustBeA(options.hrf.free, 'cell');
+    mustBeInequality(options.hrf.free);
+
     %%% validate hrf iteration integer and range (1 - 5)
     mustBeField(options.hrf, 'niter'); mustBeInteger(options.hrf.niter);
     mustBeInRange(options.hrf.niter, 1, 5);
@@ -26,33 +28,39 @@ function validate_options(options)
     mustBeInRange(options.hrf.pmin, 0.01, options.hrf.pmax, 'exclude-upper');
     mustBeInRange(options.hrf.pmax, options.hrf.pmin, 1, 'exclude-lower');
     
-    %%% validate fitting procedure parameters
-    mustBeField(options, 'fit');
-    
-    %%% validate fitting correlation types
-    mustBeField(options.fit, 'corr');
-    mustBeMember(options.fit.corr, {'Pearson', 'Spearman', 'Kendall'});
-    
-    %%% validate parallel processing parameters
-    mustBeField(options, 'parallel'); mustBeField(options.parallel, 'flag');
-    mustBeNumericOrLogical(options.parallel.flag);
-    
-    %%% validate parallel processing types
-    mustBeField(options.parallel, 'type');
-    mustBeMember(options.parallel.type, {'local', 'threads', 'cluster'});
-    
-    %%% validate parallel processing pool size
-    if isfield(options.parallel, 'size')
-        mustBePositive(options.parallel.size);
-        mustBeInteger(options.parallel.size);
+    %%% (optional) validate fitting procedure parameters 
+    if isfield(options, 'fit')
+        %%% validate fitting correlation types
+        mustBeField(options.fit, 'corr');
+        mustBeMember(options.fit.corr, {'Pearson', 'Spearman', 'Kendall'});
+    end
+
+    %%% (optional) validate parallel processing parameters 
+    if isfield(options, 'parallel')
+        mustBeField(options.parallel, 'flag'); 
+        mustBeNumericOrLogical(options.parallel.flag);
+
+        %%% validate parallel processing types
+        if isfield(options.parallel, 'type')
+            mustBeMember(options.parallel.type, ...
+                {'local', 'threads', 'cluster'});
+        end
+
+        %%% validate parallel processing pool size
+        if isfield(options.parallel, 'size')
+            mustBePositive(options.parallel.size);
+            mustBeInteger(options.parallel.size);
+        end
     end
     
-    %%% validate progress printing parameters
-    mustBeField(options, 'print'); mustBeField(options.print, 'quiet');
-    mustBeNumericOrLogical(options.print.quiet);
+    %%% (optional) validate progress printing parameters
+    if isfield(options, 'print')
+        mustBeField(options.print, 'quiet');
+        mustBeNumericOrLogical(options.print.quiet);
 
-    %%% validate progress printing iteration marker
-    mustBeField(options.print, 'n'); mustBeInteger(options.print.n);
-    mustBeNonNan(options.print.n); mustBePositive(options.print.n); 
+        %%% validate progress printing iteration marker
+        mustBeField(options.print, 'n'); mustBeInteger(options.print.n);
+        mustBeNonNan(options.print.n); mustBePositive(options.print.n);
+    end
 
 end

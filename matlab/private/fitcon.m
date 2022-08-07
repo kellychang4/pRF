@@ -29,7 +29,7 @@ function [params,err] = fitcon(errorFunc, params, freeList, varargin)
 %   err            Error value at minimum, numeric
 %
 % Notes:
-% - Dependencies: params2varcon.m, var2params.m, fitFunction.m
+% - Dependencies: params2varcon.m, var2params.m, fit_function.m
 
 % Written by Geoffrey M. Boynton, 9/26/14
 % Adapted from 'fit.m' written by gmb in the summer of '00
