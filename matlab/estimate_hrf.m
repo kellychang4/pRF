@@ -46,13 +46,15 @@ fitParams = calculate_initial_parameters(bestSeed);
 
 fprintf('Estimating HRF...\n');
 for i = 1:niter % for number of hrf fit iterations
-    fprintf(' Iteration %d of %d...\n', i, niter);
-
     %%% fit hrf parameters
+    fprintf(' Iteration %d of %d (HRF)...\n', i, niter);
     fitParams = fit_hrf(fitParams);
 
     %%% if not last iteration, fit prfs with estimated hrf parameters
-    if i ~= niter; fitParams = fit_prf(fitParams); end
+    if i ~= niter
+        fprintf(' Iteration %d of %d (pRF)...\n', i, niter);
+        fitParams = fit_prf(fitParams);
+    end
 end
 
 fprintf('Collecting Estimated HRF Parameters...\n'); 

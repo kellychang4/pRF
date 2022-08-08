@@ -26,6 +26,7 @@ GLOBAL_PARAMETERS.fit.name   = 'Pearson';
 %%% parallel processing parameters
 GLOBAL_PARAMETERS.parallel.flag  = true;
 GLOBAL_PARAMETERS.parallel.type  = 'threads';
+GLOBAL_PARAMETERS.parallel.pool  = []; 
 
 %%% progress printing parameters
 GLOBAL_PARAMETERS.print.quiet = false;
@@ -37,7 +38,6 @@ if ~isempty(hrf) % if hrf provided, remove options.hrf
     options.hrf.model = hrf.model; % replace with hrf structure information
 end
 overwrite_global_parameters(options);
-
 
 %% Derived Parameters
 

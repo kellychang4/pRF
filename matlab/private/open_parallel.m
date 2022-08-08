@@ -10,9 +10,12 @@ if parallel.flag
         
         %%% open parallel pool based on pool type
         switch parallel.type
-            case 'threads'; parpool(parallel.type);
-            case 'local';   parpool(parallel.type, parallel.size); 
+            case 'threads'; p = parpool(parallel.type);
+            case 'local';   p = parpool(parallel.type, parallel.size); 
         end
+
+        %%% set global parallel pool
+        set_global_parameters('parallel.pool', p);  
 
     catch 
         fprintf(['[NOTE] Failed to open parallel pool. ', ...
