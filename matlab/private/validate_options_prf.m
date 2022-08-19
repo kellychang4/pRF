@@ -32,10 +32,21 @@ function validate_options_prf(options)
                 {'local', 'threads', 'cluster'});
         end
 
+        %%% validate parallel processing method
+        if isfield(options.parallel, 'method')
+            mustBeMember(options.parallel.method, {'parfor', 'parfeval'});
+        end
+
         %%% validate parallel processing pool size
         if isfield(options.parallel, 'size')
             mustBePositive(options.parallel.size);
             mustBeInteger(options.parallel.size);
+        end
+
+        %%% validiate parallel processing chunk size
+        if isfield(options.parallel, 'chunk')
+            mustBePositive(options.parallel.chunk);
+            mustBeInteger(options.parallel.chunk);
         end
     end
     

@@ -24,9 +24,10 @@ GLOBAL_PARAMETERS.hrf.pmax   = 0.25;
 GLOBAL_PARAMETERS.fit.name   = 'Pearson'; 
 
 %%% parallel processing parameters
-GLOBAL_PARAMETERS.parallel.flag  = true;
-GLOBAL_PARAMETERS.parallel.type  = 'threads';
-GLOBAL_PARAMETERS.parallel.pool  = []; 
+GLOBAL_PARAMETERS.parallel.flag   = true;
+GLOBAL_PARAMETERS.parallel.type   = 'threads';
+GLOBAL_PARAMETERS.parallel.method = 'parfor';
+GLOBAL_PARAMETERS.parallel.pool   = []; 
 
 %%% progress printing parameters
 GLOBAL_PARAMETERS.print.quiet = false;
@@ -101,9 +102,35 @@ if GLOBAL_PARAMETERS.parallel.flag && ...
     mustBeInRange(GLOBAL_PARAMETERS.parallel.size, 0, n);
 end
 
+%%% parallel processing parameters, if threads-based pool and parfor, cannot print
+if GLOBAL_PARAMETERS.parallel.flag && ...
+        strcmp(GLOBAL_PARAMETERS.parallel.type, 'threads') && ...
+        strcmp(GLOBAL_PARAMETERS.parallel.method, 'parfor')
+    fprintf(['[NOTE] Cannot print progress within a threads-based ', ...
+        'parallel pool when using ''parfor''.\nSetting progress ', ...
+        'printing mode off.\n']);
+    GLOBAL_PARAMETERS.print.quiet = true;
+end
+
+%%% parallel processing parameters, if parfeval method
+if  GLOBAL_PARAMETERS.parallel.flag && ...
+        strcmp(GLOBAL_PARAMETERS.parallel.method, 'parfeval')
+    n = min(GLOBAL_PARAMETERS.unit.n, 5e3); % maximum number in a chunk
+    if ~isfield(GLOBAL_PARAMETERS.parallel, 'chunk') || options.parallel.chunk > n
+        fprintf(['[NOTE] Did not specify or requested parallel job ', ...
+            'chunk size.\nAssigning job limit to be %d units.\n'], n);
+        GLOBAL_PARAMETERS.parallel.chunk = n;
+    end
+    mustBeInteger(GLOBAL_PARAMETERS.parallel.chunk); 
+    mustBeInRange(GLOBAL_PARAMETERS.parallel.chunk, 0, n);
+end
+
 %%% progress printing parameters
-digits = length(num2str(length(protocols(1).(unit)))) + 1;
-GLOBAL_PARAMETERS.print.digits = digits;
+GLOBAL_PARAMETERS.print.str = [
+    sprintf('  %s', capitalize(GLOBAL_PARAMETERS.unit.name)), ...
+    sprintf('%%%dd', length(num2str(length(protocols(1).(unit)))) + 1), ...
+    ' out of %d...\n'
+];
 
 %%% create seeds structure
 GLOBAL_PARAMETERS.seeds = create_seeds(seeds);
