@@ -68,7 +68,10 @@ function validate_options_hrf(options)
     if isfield(options, 'print')
         mustBeField(options.print, 'quiet');
         mustBeNumericOrLogical(options.print.quiet);
-
+    end
+    
+    %%% (optional) validate printing increment if printing
+    if ~options.print.quiet
         %%% validate progress printing iteration marker
         mustBeField(options.print, 'inc'); mustBeInteger(options.print.inc);
         mustBeNonNan(options.print.inc); mustBePositive(options.print.inc);
